@@ -64,10 +64,10 @@
     return {ias,q,scannerScale,scannerOnlyScale,economyScale,enhancement,pve,pvp,resourceBonus,lithiumBonus,rewards,claim,scan,scansPerFlight,costs,total,
       daily:{flights,scans,scanBudget:Math.ceil(scans)*scan,resources:rewards.resource*flights,lithium:rewards.lithium*flights,claimCost:claim*flights,scanCost:scans*scan,lithiumChange:(rewards.lithium-claim)*flights-scans*scan}};
   }
-  // Deterministic target configuration: start from zero, independent of prior inputs.
+  // Preserve existing levels: automatic fitting only adds upgrades.
   // Compare marginal MSU per relative +1% reward with the next scanner level.
   function autoFit(s){
-    const target={...s,resourceLevel:0,t18:0,lithiumLevel:0};
+    const target={...s};
     const errors=validate(target);if(errors.length)throw new RangeError(errors.join(','));
     const rewardAt=(u,t,v=0)=>{
       const e=.002*t*s.planets*(1+.001*s.experience+s.techBoost/100);

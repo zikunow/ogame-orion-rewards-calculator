@@ -89,11 +89,11 @@ test('all selectable economy speeds work and preserve integer per-planet roundin
 });
 
 
-test('automatic fitting is deterministic and beats next scanners until its stopping point',()=>{
+test('automatic fitting beats next scanners until its stopping point',()=>{
   for(const scannerLevel of [1,20,39,45,80]){
-    const s={...O.defaults,scannerLevel};
+    const s={...O.defaults,scannerLevel,resourceLevel:0,t18:0,lithiumLevel:0};
     const fit=O.autoFit(s);
-    assert.deepEqual(fit.levels,O.autoFit({...s,resourceLevel:50,t18:80,lithiumLevel:50}).levels);
+    assert.deepEqual(fit.levels,O.autoFit({...s,...fit.levels}).levels);
     for(const step of fit.steps)assert.ok(step.msuPerPercent<=fit.scannerMsuPerPercent);
     for(const next of fit.nextCandidates)assert.ok(next.msuPerPercent>fit.scannerMsuPerPercent);
     const r=O.calculate({...s,...fit.levels});
@@ -104,7 +104,7 @@ test('automatic fitting is deterministic and beats next scanners until its stopp
   assert.deepEqual(O.autoFit({...O.defaults,scannerLevel:45}).levels,{resourceLevel:21,t18:11,lithiumLevel:18});
 });
 test('automatic fitting handles no General, low planet counts, zero flights and scan-result changes',()=>{
-  for(const playerClass of ['collector','discoverer'])assert.equal(O.autoFit({...O.defaults,playerClass}).levels.t18,0);
+  for(const playerClass of ['collector','discoverer'])assert.equal(O.autoFit({...O.defaults,playerClass}).levels.t18,O.defaults.t18);
   const poor=O.autoFit({...O.defaults,planets:1,scannerLevel:1});
   assert.equal(poor.lithiumCovered,false);assert.equal(poor.levels.lithiumLevel,50);
   assert.deepEqual(O.autoFit({...O.defaults,launchesPerDay:0}).levels,O.autoFit(O.defaults).levels);
@@ -114,4 +114,21 @@ test('automatic fitting handles no General, low planet counts, zero flights and 
     assert.ok(O.calculate({...O.defaults,economy,...fit.levels}).daily.lithiumChange>=-1e-5);
   }
   assert.throws(()=>O.autoFit({...O.defaults,scannerLevel:NaN}),RangeError);
+});
+
+test('automatic fitting never demolishes existing levels across scanner and class changes',()=>{
+  const keys=['resourceLevel','t18','lithiumLevel'];
+  let s={...O.defaults};
+  s={...s,...O.autoFit(s).levels};
+  assert.equal(s.lithiumLevel,21);
+  const higher=O.autoFit({...s,scannerLevel:45});
+  assert.deepEqual(higher.levels,{resourceLevel:21,t18:11,lithiumLevel:21});
+  s={...s,scannerLevel:45,...higher.levels};
+  for(const change of [{scannerLevel:39},{scannerLevel:1},{playerClass:'collector'},{playerClass:'discoverer'},{planets:1},{resultsPerScan:100},{techBoost:1000}]){
+    const fit=O.autoFit({...s,...change});
+    for(const key of keys)assert.ok(fit.levels[key]>=s[key],key+' must not decrease');
+  }
+  const built={...O.defaults,resourceLevel:40,t18:30,lithiumLevel:45};
+  assert.deepEqual(O.autoFit(built).levels,{resourceLevel:40,t18:30,lithiumLevel:45});
+  assert.throws(()=>O.autoFit({...O.defaults,lithiumLevel:NaN}),RangeError);
 });
