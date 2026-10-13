@@ -158,3 +158,19 @@ html[data-theme="cosmic"] .flight-panel { box-shadow:0 0 30px rgba(0,180,190,.06
 .auto-fit-status:empty { display:none; }
 .field-grid input:disabled { background:var(--panel-2); color:var(--muted); cursor:not-allowed; opacity:1; }
 @media(max-width:680px) { .auto-fit-control { padding:12px; } .auto-fit-control .note,.auto-fit-status { margin-left:0; } }
+
+.primary-settings { grid-template-columns:repeat(2,minmax(0,1fr)); align-items:start; gap:20px; }
+.planet-setting,.scanner-setting { padding:18px; border-radius:10px; background:var(--panel-2); border:1px solid var(--line); }
+.scanner-setting { border:2px solid var(--accent); padding:17px; }
+.primary-settings .field-label { color:var(--text); font-weight:600; font-size:14px; }
+.scanner-setting input[type="number"] { font-size:20px; font-weight:700; height:48px; border-color:var(--accent); }
+.scanner-setting .auto-fit-control { padding:14px 0 0; border:0; border-radius:0; border-top:1px solid var(--line); margin-top:14px; background:transparent; }
+.settings-group { margin-top:24px; padding-top:20px; border-top:1px solid var(--line); }
+.settings-group h3 { margin:0 0 14px; font-size:14px; color:var(--text); }
+.upgrade-settings { grid-template-columns:repeat(3,minmax(0,1fr)); }
+.setting-field .field-label { display:flex; gap:8px; align-items:center; justify-content:space-between; }
+.managed-badge { flex:0 0 auto; font-size:11px; font-weight:600; padding:3px 7px; border:1px solid var(--line); border-radius:5px; color:var(--accent); background:var(--panel-2); }
+.managed-field { border:1px dashed var(--line); background:var(--panel-2); border-radius:8px; padding:12px; }
+.managed-field input:disabled { border-style:dashed; background:var(--panel); }
+.managed-notice { color:var(--muted); margin:-4px 0 14px; font-size:12px; line-height:1.6; }
+@media(max-width:680px) { .primary-settings,.upgrade-settings { grid-template-columns:1fr; } .planet-setting,.scanner-setting { padding:14px; } .scanner-setting { padding:13px; } .settings-group { margin-top:20px; } }
