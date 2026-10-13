@@ -40,8 +40,8 @@ function syncUrl(){
 function setTheme(){document.documentElement.dataset.theme=theme;$('theme').value=theme;try{localStorage.setItem('ias-theme',theme);}catch{}syncUrl();}
 function build(){
   document.documentElement.lang=lang;
-  document.title=t('Калькулятор наград Ориона — OGame','Orion Rewards Calculator — OGame');
-  $('title').textContent=t('Калькулятор наград Ориона','Orion Rewards Calculator');
+  document.title=t('Симулятор ресурсных наград Ориона — OGame','Orion Resource Rewards Simulator — OGame');
+  $('title').textContent=t('Симулятор ресурсных наград Ориона','Orion Resource Rewards Simulator');
   $('intro').textContent=t('Рассчитайте стоимость развития аккаунта для Ориона, ожидаемые награды за вылет и за день, а также расход и баланс лития.','Calculate your Orion account investment, expected rewards per flight and per day, and lithium spending and balance.');
   $('oldCalculator').textContent=t('Калькуляторы IAS и T18','IAS and T18 calculators');
   $('themeLabel').textContent=t('Дизайн','Design');$('minimal').textContent=t('Минимализм','Minimal');$('cosmic').textContent=t('Космос','Cosmic');
@@ -52,7 +52,7 @@ function build(){
     <p class="status" id="copyStatus" role="status"></p></section>
     <div id="investmentMount"></div>
     <div id="averagesMount"></div>
-    <section class="panel flight-panel"><div class="section-top"><h2>${t('Симулятор лута','Loot simulator')}</h2></div><div class="field-grid simulator-controls">${field('launchesPerDay')}${field('usedSlots')}<button type="button" class="calculate-button" id="calculateLoot">${t('Рассчитать','Calculate')}</button></div><p class="simulation-status" id="simulationStatus" role="status"></p><p class="note">${t('Запуск флотов — отправка выбранного количества слотов. Внутренние волны аномалии здесь не задаются.','A fleet launch sends the chosen number of slots. Internal anomaly waves are not configured here.')}</p></section>`;
+    <section class="panel flight-panel"><div class="section-top"><h2>${t('Симулятор дневных ресурсных наград из аномалий','Daily anomaly resource rewards simulator')}</h2></div><div class="field-grid simulator-controls">${field('launchesPerDay')}${field('usedSlots')}<button type="button" class="calculate-button" id="calculateLoot">${t('Рассчитать','Calculate')}</button></div><p class="simulation-status" id="simulationStatus" role="status"></p><p class="note">${t('Запуск флотов — отправка выбранного количества слотов. Внутренние волны аномалии здесь не задаются.','A fleet launch sends the chosen number of slots. Internal anomaly waves are not configured here.')}</p></section>`;
   $('accountSettings').addEventListener('toggle',()=>{settingsOpen=$('accountSettings').open;});
   document.querySelectorAll('[data-setting]').forEach(el=>el.addEventListener('input',()=>{
     const k=el.dataset.setting;state[k]=typeof O.defaults[k]==='number'?(el.value.trim()===''?NaN:Number(el.value)):el.value;
