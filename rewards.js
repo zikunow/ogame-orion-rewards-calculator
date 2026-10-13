@@ -3,7 +3,7 @@ const $=id=>document.getElementById(id), O=Orion;
 const params=new URLSearchParams(location.search);
 let lang=params.get('lang')==='en'?'en':'ru';
 let state={...O.defaults};
-let settingsOpen=true;
+let settingsOpen=false;
 for(const key of Object.keys(state)) if(params.has(key)){
   const value=params.get(key);
   state[key]=typeof state[key]==='number'?(value.trim()===''?NaN:Number(value)):typeof state[key]==='boolean'?value==='1':value;
