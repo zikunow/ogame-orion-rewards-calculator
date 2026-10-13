@@ -64,3 +64,13 @@ a { color:var(--accent); }
 .investment[open] .investment-open { display:none; }
 .investment-close::after { content:" −"; }
 .investment-open::after { content:" +"; }
+
+.averages-panel { margin:24px 0; }
+.averages-description { margin:7px 0 14px; }
+.simulator-controls { grid-template-columns:minmax(170px,1fr) minmax(170px,1fr) auto; align-items:end; }
+.simulator-controls small:empty { display:none; }
+.calculate-button { height:42px; padding:0 28px; border:1px solid #246f63; border-radius:6px; background:#246f63; color:#fff; font:inherit; font-weight:600; cursor:pointer; }
+.calculate-button:hover { background:#1b594f; }
+.simulation-status { color:var(--muted); font-size:13px; margin:10px 0 0; }
+.simulation-status:empty { display:none; }
+@media(max-width:680px) { .simulator-controls { grid-template-columns:1fr; } .calculate-button { width:100%; } }
