@@ -5,14 +5,13 @@
   const baseline = Object.freeze({economy:10,planets:18,scannerLevel:39,ias:702,lithiumPerHour:4436514,scanPrice:2218257,resultsPerScan:6,scans:313,anomalies:1878,selectedFlights:102,meanClaimCost:21717567.43137255,
     pve:{flights:12,baseMsuSum:247005407.19766924,baseLithiumSum:107452034.20347393},
     pvp:{flights:90,baseMsuSum:22762786610.090557,baseLithiumSum:647816510.3907931}});
-  const defaults = Object.freeze({playerClass:'general',economy:10,planets:18,scannerLevel:39,race:'mecha',experience:100,techBoost:7.5,labLevel:25,t18:7,resourceLevel:15,lithiumLevel:18,availableSlots:6,resultsPerScan:6,launchesPerDay:6,usedSlots:6,scaleLithium:false});
+  const defaults = Object.freeze({playerClass:'general',economy:10,planets:18,scannerLevel:39,race:'mecha',experience:100,techBoost:7.5,labLevel:25,t18:7,resourceLevel:15,lithiumLevel:18,availableSlots:6,resultsPerScan:6,launchesPerDay:6,usedSlots:6});
   const ranges={economy:[1,10],planets:[1,50],scannerLevel:[1,80],experience:[0,100],techBoost:[0,1000],labLevel:[0,100],t18:[0,80],resourceLevel:[0,50],lithiumLevel:[0,50],availableSlots:[1,100],resultsPerScan:[1,100],launchesPerDay:[0,1000],usedSlots:[1,100]};
   function validate(s){
     const errors=[];
     for(const [key,[min,max]] of Object.entries(ranges)) if(!Number.isFinite(s[key])||s[key]<min||s[key]>max||(key!=='techBoost'&&!Number.isInteger(s[key]))) errors.push(key);
     if(!['general','collector','discoverer'].includes(s.playerClass)) errors.push('playerClass');
     if(!['human','rocktal','mecha','kaelesh'].includes(s.race)) errors.push('race');
-    if(typeof s.scaleLithium!=='boolean') errors.push('scaleLithium');
     if(s.usedSlots>s.availableSlots) errors.push('slots');
     return errors;
   }
@@ -52,7 +51,7 @@
     const enhancement=.002*s.t18*s.planets*(1+.001*s.experience+s.techBoost/100);
     const pve=s.playerClass==='general'?1.5+.5*enhancement:1,pvp=s.playerClass==='general'?2+enhancement:1;
     const resourceBonus=.002*s.planets*s.resourceLevel,lithiumBonus=.002*s.planets*s.lithiumLevel;
-    const rewards=meanRewards(pve,pvp,resourceBonus,lithiumBonus,scannerScale,s.scaleLithium?scannerScale:economyScale);
+    const rewards=meanRewards(pve,pvp,resourceBonus,lithiumBonus,scannerScale,scannerScale);
     const claim=baseline.meanClaimCost*scannerScale,scan=q/2,scansPerFlight=1/(s.resultsPerScan*(102/1878));
     const flights=s.launchesPerDay*s.usedSlots,scans=flights*scansPerFlight;
     const costs={scanner:cumulative(s.scannerLevel,s.planets,scannerCostAtLevel),

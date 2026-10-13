@@ -47,13 +47,11 @@ function build(){
   $('form').innerHTML=`<section class="panel account-panel"><div class="section-top"><h2>${t('Настройки аккаунта','Account settings')}</h2><div><button type="button" class="secondary" id="reset">${t('Начальные настройки','Reset defaults')}</button> <button type="button" class="secondary" id="copy">${t('Скопировать ссылку','Copy share link')}</button></div></div>
     <div class="field-grid">${['playerClass','economy','planets','scannerLevel','race','experience','techBoost','labLevel','t18','resourceLevel','lithiumLevel','availableSlots','resultsPerScan'].map(k=>field(k,k==='resourceLevel'?t('Одинаковый уровень металла, кристалла и дейтерия.','The same level for metal, crystal and deuterium.'):k==='availableSlots'?t('Число слотов, не уровень улучшения.','Slot count, not an upgrade level.'):k==='resultsPerScan'?t('Число результатов, не уровень улучшения.','Result count, not an upgrade level.'):'')).join('')}</div>
     <div class="metrics" id="accountMetrics"></div>
-    <div class="model-toggle"><label class="toggle"><input type="checkbox" id="scaleLithium"${state.scaleLithium?' checked':''}><span>${t('Учитывать тарелки в наградах лития','Include scanners in lithium rewards')}</span></label><p>${t('Расчётная зависимость от уровня тарелок и числа планет.','Modeled dependency on scanner level and planet count.')}</p></div>
     <p class="status" id="copyStatus" role="status"></p></section>
     <section class="panel flight-panel"><div class="section-top"><h2>${t('Запуски флотов','Fleet launches')}</h2></div><div class="field-grid">${field('launchesPerDay')}${field('usedSlots')}</div><p class="note">${t('Запуск флотов — отправка выбранного количества слотов. Внутренние волны аномалии здесь не задаются.','A fleet launch sends the chosen number of slots. Internal anomaly waves are not configured here.')}</p></section>`;
   document.querySelectorAll('[data-setting]').forEach(el=>el.addEventListener('input',()=>{
     const k=el.dataset.setting;state[k]=typeof O.defaults[k]==='number'?(el.value.trim()===''?NaN:Number(el.value)):el.value;render();
   }));
-  $('scaleLithium').addEventListener('change',()=>{state.scaleLithium=$('scaleLithium').checked;render();});
   $('reset').onclick=()=>{state={...O.defaults};build();};
   $('copy').onclick=async()=>{try{await navigator.clipboard.writeText(location.href);$('copyStatus').textContent=t('Ссылка скопирована.','Link copied.');}catch{$('copyStatus').textContent=t('Не удалось скопировать. Скопируйте адрес страницы из браузера.','Copy failed. Copy the address from your browser.');}};
   $('footer').textContent=t('Неофициальный калькулятор сообщества. Диапазоны полей — ограничения калькулятора, не максимальные уровни игры.','Unofficial community calculator. Input ranges are calculator limits, not game level caps.');
@@ -75,7 +73,6 @@ function render(){
   const componentLabels={scanner:t('Тарелки','Scanners'),metal:t('Металлические подздания','Metal sub-buildings'),crystal:t('Кристаллические подздания','Crystal sub-buildings'),deut:t('Дейтериевые подздания','Deuterium sub-buildings'),lithium:t('Литиевые подздания','Lithium sub-buildings'),t18:'T18'};
   const row=(name,v)=>`<tr><td>${name}</td><td>${n(v.metal,0)}</td><td>${n(v.crystal,0)}</td><td>${n(v.deut,0)}</td><td>${exactMsu(v)}</td></tr>`;
   const changed=r.scannerOnlyScale!==1;
-  const lithiumNote=changed?(s.scaleLithium?t('Литий масштабируется через Q: зависимость не подтверждена.','Lithium is scaled by Q: this dependency is unconfirmed.'):t('Литий рассчитан без масштабирования через Q. Его зависимость от новых тарелок не подтверждена.','Lithium is calculated without Q scaling. Its dependency on the new scanner configuration is unconfirmed.')):'';
   const resultWarning=s.resultsPerScan!==6?t('Цена скана рассчитана по модели Q/2 для шести результатов. Цена при другом количестве результатов не подтверждена; расходы и баланс ниже условные.','Scan price uses the Q/2 model for six results. Pricing at other result counts is unconfirmed; spending and balance below are conditional.'):'';
   const classWarning=s.playerClass!=='general'?t('Режим без бонуса Генерала. Эффекты Коллекционера и Исследователя в прогноз не включены.','No-General-bonus mode. Collector and Discoverer effects are not included in the forecast.'):'';
   const warn=x=>x?`<p class="model-warning">${x}</p>`:'';
@@ -85,7 +82,7 @@ function render(){
     <div class="table-wrap"><table><thead><tr><th>${t('Компонент · все планеты','Component · all planets')}</th><th>${t('Металл','Metal')}</th><th>${t('Кристалл','Crystal')}</th><th>${t('Дейтерий','Deuterium')}</th><th>${msuLabel()}</th></tr></thead><tbody>${Object.entries(r.costs).map(([k,v])=>row(componentLabels[k],v)).join('')}</tbody><tfoot>${row(t('Итого','Total'),r.total)}</tfoot></table></div></section>
     <section aria-label="${t('Средние на один вылет','Averages per flight')}"><h2>${t('Среднее на один выбранный вылет','Average per selected flight')}</h2>
     <div class="summary-grid rewards-summary">${card(t('Ресурсная награда · МСУ','Resource reward · MSU'),r.rewards.resource,t('До расходов, топлива и потерь.','Before spending, fuel and losses.'))}${card(t('Литий получен','Lithium received'),r.rewards.lithium,t('Включая вылеты без литиевой находки.','Includes flights with no lithium find.'))}${card(t('Литий на получение награды','Lithium to claim reward'),r.claim,t('Сканы оплачиваются отдельно.','Scans are paid separately.'))}</div>
-    ${warn(classWarning)}${warn(lithiumNote)}<p class="note">${t('Состав отбора фиксирован: 102 миссии. При изменении параметров выборка не пересобирается по порогам.','Selection is fixed at 102 missions. Changing settings does not reselect missions using the thresholds.')}</p></section>
+    ${warn(classWarning)}<p class="note">${t('Состав отбора фиксирован: 102 миссии. При изменении параметров выборка не пересобирается по порогам.','Selection is fixed at 102 missions. Changing settings does not reselect missions using the thresholds.')}</p></section>
     <section class="panel daily-panel"><div class="section-top"><h2>${t('Прогноз за день','Daily forecast')}</h2><span class="note">${n(s.launchesPerDay,0)} × ${n(s.usedSlots,0)} = ${n(d.flights,0)} ${t('вылетов','flights')}</span></div>
     <div class="daily-grid"><article class="balance"><h3>${t('Ресурсная награда · МСУ','Resource reward · MSU')}</h3><strong>${n(d.resources)}</strong><p class="note">${t('Металл + 1,5 × кристалл + 3 × дейтерий. Литий в МСУ не включён.','Metal + 1.5 × crystal + 3 × deuterium. Lithium is excluded from MSU.')}</p><p class="note">${t('Топливо и потери флота не учитываются.','Fuel and fleet losses are excluded.')}</p></article>
     <article class="balance"><h3>${t('Изменение лития за день','Daily lithium change')}</h3><strong class="${d.lithiumChange<0?'negative':''}">${d.lithiumChange>0?'+':''}${n(d.lithiumChange)}</strong><dl class="ledger"><dt>${t('Литий получен','Lithium received')}</dt><dd>+${n(d.lithium)}</dd><dt>${t('Получение наград','Reward claims')}</dt><dd>−${n(d.claimCost)}</dd><dt>${t('Сканы · среднее ожидание','Scans · expected average')}</dt><dd>−${n(d.scanCost)}</dd></dl><p class="note">${t('Конверсия лития не включена в этот баланс.','Lithium conversion is excluded from this balance.')}</p></article></div>
@@ -103,7 +100,7 @@ function modelDetails(){const b=O.baseline;return `<details class="panel model-p
   <p>${t('Из базовых сумм сняты бонусы подзданий и Генерала. P — планеты, L — уровень тарелки, T — T18, H — уровень здания скидки, R — уровень опыта, B — усиление здания в долях единицы, U — ресурсный уровень, V — литиевый уровень.','Base sums exclude sub-building and General bonuses. P = planets, L = scanner level, T = T18, H = discount building level, R = experience level, B = building boost as a decimal, U = resource level, V = lithium level.')}</p>
   <pre>IAS = P × L; search = IAS
 Q = P × floor(16.896 × economy × L × 1.1^(L−1))
-scale = Q / 4436514; economyScale = economy / 10; scanPrice = Q / 2
+scale = Q / 4436514; scanPrice = Q / 2
 experienceBoost = 0.001 × R
 E = 0.002 × T × P × (1 + experienceBoost + B)
 GeneralPvE = 1.5 + 0.5 × E; GeneralPvP = 2 + E
@@ -113,8 +110,7 @@ lithiumBonus = 0.002 × P × V
 resourceMean = (247005407.19766924 × GeneralPvE
   + 22762786610.090557 × GeneralPvP) / 102 × scale × (1 + resourceBonus)
 lithiumMean = (107452034.20347393 × GeneralPvE
-  + 647816510.3907931 × GeneralPvP) / 102 × (1 + lithiumBonus)
-${t('Литиевая награда дополнительно × economyScale; при включённом переключателе вместо него × scale','Lithium rewards additionally × economyScale; if the toggle is enabled, use × scale instead')}
+  + 647816510.3907931 × GeneralPvP) / 102 × scale × (1 + lithiumBonus)
 claimMean = 21717567.43137255 × scale
 selectionRate = 102 / 1878
 flights = launchesPerDay × usedSlots
@@ -127,6 +123,7 @@ subBuildingCost(L) = floor(base × 1.5^(L−1))
 discount = min(0.0025 × H, 0.25)
 T18Cost(T) = floor([300000,180000,120000] × T × 1.7^(T−1) × (1−discount))
 totalCost = P × sum(level costs from 1 to target)</pre>
+  <p>${t('Награда лития всегда масштабируется пропорционально конверсии лития в час: учитываются уровень тарелок, число планет и скорость экономики. Зависимость награды лития от тарелок — допущение модели, пока не подтверждённое экспериментом.', 'Lithium rewards always scale proportionally to hourly lithium conversion, accounting for scanner level, planet count and economy speed. The dependency of lithium rewards on scanners is a model assumption that has not yet been confirmed experimentally.')}</p>
   <p>${t('Q — конверсия лития в час. Экономика масштабируется линейно относительно baseline ×10; для других скоростей это допущение модели.', 'Q is lithium conversion per hour. Economy is scaled linearly relative to the ×10 baseline; other speeds use this model assumption.')}</p>
   <p>${t('Каждый ресурс округляется отдельно. Стоимость рассчитана точной целочисленной арифметикой; награды — средние по эмпирической модели. Корабли, артефакты, предметы и XP в МСУ не входят. Изменение числа результатов меняет ожидаемое число сканов, но его влияние на цену скана не подтверждено.','Each resource is rounded separately. Costs use exact integer arithmetic; rewards are empirical-model averages. Ships, artifacts, items and XP are excluded from MSU. Result count changes the expected scan count, but its effect on scan price is unconfirmed.')}</p>
   <p>${t('Базовые цены подзданий М/К/Д: металл 112500/37500/18000; кристалл 37500/67500/27000; дейтерий 30000/37500/45000; литий 52500/37500/37500.','Sub-building base prices M/C/D: metal 112500/37500/18000; crystal 37500/67500/27000; deuterium 30000/37500/45000; lithium 52500/37500/37500.')}</p>

@@ -43,10 +43,11 @@ test('no General bonus means both multipliers equal one regardless of T18',()=>{
   const a=calc({playerClass:'collector',t18:0}),b=calc({playerClass:'collector',t18:10});
   assert.equal(b.pve,1);assert.equal(b.pvp,1);assert.deepEqual(a.rewards,b.rewards);
 });
-test('scanner scale is applied once; lithium scaling is explicitly optional',()=>{
+test('scanner scale is applied once to resource and lithium rewards',()=>{
   const a=calc({}),b=calc({scannerLevel:40}),c=calc({scannerLevel:40,scaleLithium:true});
   close(b.rewards.resource,a.rewards.resource*b.scannerScale);close(b.claim,a.claim*b.scannerScale);
-  assert.equal(b.rewards.lithium,a.rewards.lithium);close(c.rewards.lithium,a.rewards.lithium*c.scannerScale);
+  close(b.rewards.lithium,a.rewards.lithium*b.scannerScale);close(c.rewards.lithium,a.rewards.lithium*c.scannerScale);
+  assert.equal(calc({scannerLevel:40,scaleLithium:false}).rewards.lithium,b.rewards.lithium);
 });
 test('daily ledger subtracts claim and expected scan spending, excluding conversion',()=>{
   const r=calc({}),d=r.daily;
@@ -76,7 +77,7 @@ test('economy affects conversion, rewards and spending exactly once; costs and I
   close(slow.rewards.resource,base.rewards.resource*slow.scannerScale);
   close(slow.claim,base.claim*slow.scannerScale);
   close(slow.scan,base.scan*slow.scannerScale);
-  close(slow.rewards.lithium,base.rewards.lithium*.5);
+  close(slow.rewards.lithium,base.rewards.lithium*slow.scannerScale);
   close(scaled.rewards.lithium,base.rewards.lithium*scaled.scannerScale);
 });
 test('all selectable economy speeds work and preserve integer per-planet rounding',()=>{
