@@ -65,5 +65,24 @@ test('exact cost arithmetic, floor, nearest rounding and discount cap',()=>{
   assert.equal(typeof O.twiceMsu(calc({planets:50,scannerLevel:80}).total),'bigint');
 });
 test('invalid, fractional, nonfinite and unsupported settings fail visibly',()=>{
-  for(const change of [{usedSlots:7},{planets:0},{experience:101},{planets:1.5},{scannerLevel:NaN},{techBoost:Infinity},{economy:8},{playerClass:'unknown'},{race:'unknown'},{resultsPerScan:0}])assert.throws(()=>calc(change),RangeError);
+  for(const change of [{usedSlots:7},{planets:0},{experience:101},{planets:1.5},{scannerLevel:NaN},{techBoost:Infinity},{economy:11},{playerClass:'unknown'},{race:'unknown'},{resultsPerScan:0}])assert.throws(()=>calc(change),RangeError);
+});
+
+test('economy affects conversion, rewards and spending exactly once; costs and IAS stay fixed',()=>{
+  const base=calc({}),slow=calc({economy:5}),scaled=calc({economy:5,scaleLithium:true});
+  assert.equal(slow.q,18*O.lithiumPerPlanet(39,5));
+  assert.equal(slow.ias,base.ias);assert.deepEqual(slow.costs,base.costs);
+  assert.equal(slow.daily.flights,base.daily.flights);assert.equal(slow.daily.scans,base.daily.scans);
+  close(slow.rewards.resource,base.rewards.resource*slow.scannerScale);
+  close(slow.claim,base.claim*slow.scannerScale);
+  close(slow.scan,base.scan*slow.scannerScale);
+  close(slow.rewards.lithium,base.rewards.lithium*.5);
+  close(scaled.rewards.lithium,base.rewards.lithium*scaled.scannerScale);
+});
+test('all selectable economy speeds work and preserve integer per-planet rounding',()=>{
+  for(let economy=1;economy<=10;economy++){
+    const r=calc({economy});assert.ok(r.q>0);assert.ok(Number.isInteger(r.q/18));
+    assert.equal(r.economyScale,economy/10);
+  }
+  for(const economy of [0,11,1.5,NaN,Infinity])assert.throws(()=>calc({economy}),RangeError);
 });
