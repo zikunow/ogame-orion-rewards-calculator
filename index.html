@@ -3,28 +3,35 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Симулятор ресурсных наград Ориона — OGame</title>
+  <title>Награды Ориона — OGame</title>
   <meta name="description" content="OGame Orion expected rewards, lithium spending and account configuration cost calculator. RU/EN. Experimental model based on 1,878 anomalies.">
   <link rel="stylesheet" href="styles.css">
-  <link rel="stylesheet" href="rewards.css">
+  <link rel="stylesheet" href="rewards.css?v=2">
   <script defer src="core.js"></script>
-  <script defer src="rewards.js"></script>
+  <script defer src="rewards.js?v=2"></script>
 </head>
 <body data-calculator="rewards">
   <main class="shell">
     <header class="hero">
-      <div><p class="eyebrow">OGame · Project Orion</p><h1 id="title">Симулятор ресурсных наград Ориона</h1><p class="lede" id="intro"></p></div>
+      <div><p class="eyebrow">OGame · Project Orion</p><h1 id="title">Награды Ориона</h1><p class="lede" id="intro"></p></div>
       <nav class="header-actions" aria-label="Language and design">
-        <a class="github-link" href="https://zikunow.github.io/ogame-orion-ias-calculator/" id="oldCalculator">Калькуляторы IAS и T18</a>
+        <select id="calculatorSelect" class="calculator-picker" aria-label="Калькулятор">
+          <option value="https://zikunow.github.io/ogame-orion-ias-calculator/" id="navIas">Калькулятор тарелок (IAS)</option>
+          <option value="https://zikunow.github.io/ogame-orion-ias-calculator/resources.html" id="navResources">Калькулятор подзданий</option>
+          <option value="https://zikunow.github.io/ogame-orion-ias-calculator/general.html" id="navGeneral">Калькулятор T18 Генерала</option>
+          <option value="https://zikunow.github.io/ogame-orion-rewards-calculator/" id="navRewards" selected>Награды Ориона</option>
+          <option value="https://zikunow.github.io/ogame-orion-upgrade-planner/" id="navPlanner">Планировщик улучшений</option>
+        </select>
         <div class="language-switch"><button type="button" id="langRu" aria-pressed="true">RU</button><button type="button" id="langEn" aria-pressed="false">EN</button></div>
         <label class="theme-control"><span id="themeLabel">Дизайн</span><select id="theme"><option value="minimal" id="minimal">Минимализм</option><option value="cosmic" id="cosmic">Космос</option></select></label>
       </nav>
     </header>
     <div id="form"></div>
     <p id="validation" class="validation" role="alert" hidden></p>
-    <div id="results"></div>
+    
     <footer id="footer"></footer>
     <noscript>Для расчёта включите JavaScript. Enable JavaScript to use this calculator.</noscript>
   </main>
 </body>
 </html>
+
