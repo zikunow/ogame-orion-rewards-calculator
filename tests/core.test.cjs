@@ -87,3 +87,31 @@ test('all selectable economy speeds work and preserve integer per-planet roundin
   }
   for(const economy of [0,11,1.5,NaN,Infinity])assert.throws(()=>calc({economy}),RangeError);
 });
+
+
+test('automatic fitting is deterministic and beats next scanners until its stopping point',()=>{
+  for(const scannerLevel of [1,20,39,45,80]){
+    const s={...O.defaults,scannerLevel};
+    const fit=O.autoFit(s);
+    assert.deepEqual(fit.levels,O.autoFit({...s,resourceLevel:50,t18:80,lithiumLevel:50}).levels);
+    for(const step of fit.steps)assert.ok(step.msuPerPercent<=fit.scannerMsuPerPercent);
+    for(const next of fit.nextCandidates)assert.ok(next.msuPerPercent>fit.scannerMsuPerPercent);
+    const r=O.calculate({...s,...fit.levels});
+    assert.ok(r.daily.lithiumChange>=-1e-5);
+    if(fit.levels.lithiumLevel>0)assert.ok(O.calculate({...s,...fit.levels,lithiumLevel:fit.levels.lithiumLevel-1}).daily.lithiumChange<0);
+  }
+  assert.deepEqual(O.autoFit(O.defaults).levels,{resourceLevel:15,t18:7,lithiumLevel:21});
+  assert.deepEqual(O.autoFit({...O.defaults,scannerLevel:45}).levels,{resourceLevel:21,t18:11,lithiumLevel:18});
+});
+test('automatic fitting handles no General, low planet counts, zero flights and scan-result changes',()=>{
+  for(const playerClass of ['collector','discoverer'])assert.equal(O.autoFit({...O.defaults,playerClass}).levels.t18,0);
+  const poor=O.autoFit({...O.defaults,planets:1,scannerLevel:1});
+  assert.equal(poor.lithiumCovered,false);assert.equal(poor.levels.lithiumLevel,50);
+  assert.deepEqual(O.autoFit({...O.defaults,launchesPerDay:0}).levels,O.autoFit(O.defaults).levels);
+  assert.ok(O.autoFit({...O.defaults,resultsPerScan:1}).levels.lithiumLevel>=O.autoFit(O.defaults).levels.lithiumLevel);
+  for(const economy of [1,5,10]){
+    const fit=O.autoFit({...O.defaults,economy});
+    assert.ok(O.calculate({...O.defaults,economy,...fit.levels}).daily.lithiumChange>=-1e-5);
+  }
+  assert.throws(()=>O.autoFit({...O.defaults,scannerLevel:NaN}),RangeError);
+});

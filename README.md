@@ -31,3 +31,11 @@ Enable Pages with **Settings → Pages → Source: GitHub Actions**. The include
 ## Source
 
 Cost formulas, lifeform research-building names, and visual styles were inspected from `zikunow/ogame-orion-ias-calculator` on 2026-10-13. Expected reward constants and modeling requirements come from the supplied specification. Sources are also linked in the calculator.
+
+## Automatic upgrade fitting
+
+Enable “Match upgrades to scanner level” to fit resource sub-buildings, General T18 and lithium whenever account settings change. The toggle is saved in share URLs (`autoFit=1`); disabling it keeps the fitted values available for manual editing. Reset restores the original manual defaults.
+
+The deterministic target calculation starts resource sub-buildings and T18 at zero. At each step it upgrades all three resource sub-buildings together or General T18 on all planets, choosing the smallest marginal MSU per relative +1% resource reward. It stops when remaining upgrades exceed the next scanner level’s MSU per +1%. It then chooses the minimum lithium sub-building level covering expected reward claims and search scans per flight. This uses the existing experimental model and fixed selection rate; scan prices at result counts other than six remain conditional. No free lithium conversion is added. Recommendations describe a target configuration, not a globally optimal path or irreversible upgrades to an existing account.
+
+With default account settings, scanners 39 fit resources 15 / T18 7 / lithium 21; scanners 45 fit resources 21 / T18 11 / lithium 18. Non-General classes fit T18 to zero. If lithium coverage cannot be achieved within input limits, the maximum level is selected and a visible warning is shown. Calculator-level caps are reported when hit.

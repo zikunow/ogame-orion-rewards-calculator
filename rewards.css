@@ -149,3 +149,12 @@ html[data-theme="cosmic"] .flight-panel { box-shadow:0 0 30px rgba(0,180,190,.06
 .flight-details summary { cursor:pointer; width:fit-content; }
 .flight-details .ledger { max-width:640px; padding:14px; border:1px solid var(--line); border-radius:8px; }
 @media(max-width:680px) { .flight-details .ledger { grid-template-columns:1fr; } .flight-details dd { text-align:left; color:var(--text); } }
+
+.auto-fit-control { margin-top:16px; padding:14px 16px; border:1px solid var(--line); border-radius:8px; background:var(--panel-2); }
+.auto-fit-label { display:flex; align-items:center; gap:10px; cursor:pointer; font-weight:600; font-size:14px; }
+.auto-fit-label input { width:18px; height:18px; margin:0; flex:0 0 18px; accent-color:var(--accent); }
+.auto-fit-control .note { margin:7px 0 0 28px; font-size:12px; }
+.auto-fit-status { margin:8px 0 0 28px; color:var(--accent); font-size:13px; line-height:1.6; }
+.auto-fit-status:empty { display:none; }
+.field-grid input:disabled { background:var(--panel-2); color:var(--muted); cursor:not-allowed; opacity:1; }
+@media(max-width:680px) { .auto-fit-control { padding:12px; } .auto-fit-control .note,.auto-fit-status { margin-left:0; } }

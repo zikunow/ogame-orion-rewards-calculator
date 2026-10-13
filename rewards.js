@@ -3,6 +3,8 @@ const $=id=>document.getElementById(id), O=Orion;
 const params=new URLSearchParams(location.search);
 let lang=params.get('lang')==='en'?'en':'ru';
 let state={...O.defaults};
+let autoFitEnabled=params.get('autoFit')==='1';
+let autoFitResult=null;
 let settingsOpen=false;
 let investmentOpen=false;
 for(const key of Object.keys(state)) if(params.has(key)){
@@ -39,12 +41,21 @@ function field(k,help=''){
 }
 function syncUrl(){
   const url=new URL(location.href);url.search='';
+  url.searchParams.set('autoFit',autoFitEnabled?'1':'0');
   url.searchParams.set('lang',lang);url.searchParams.set('theme',theme);
   for(const [k,v] of Object.entries(state))url.searchParams.set(k,typeof v==='boolean'?v?'1':'0':String(v));
   history.replaceState({},'',url);
 }
 function setTheme(){document.documentElement.dataset.theme=theme;$('theme').value=theme;try{localStorage.setItem('ias-theme',theme);}catch{}syncUrl();}
+function applyAutoFit(){
+  autoFitResult=null;
+  if(!autoFitEnabled)return;
+  // Auto-managed fields may be repaired; other invalid settings remain visible.
+  if(O.validate({...state,resourceLevel:0,t18:0,lithiumLevel:0}).length)return;
+  autoFitResult=O.autoFit(state);Object.assign(state,autoFitResult.levels);
+}
 function build(){
+  applyAutoFit();
   document.documentElement.lang=lang;
   document.title=t('Награды Ориона — OGame','Orion Rewards — OGame');
   $('title').textContent=t('Награды Ориона','Orion Rewards');
@@ -55,6 +66,7 @@ function build(){
   for(const l of ['ru','en'])$('lang'+(l==='ru'?'Ru':'En')).setAttribute('aria-pressed',String(lang===l));
   $('form').innerHTML=`<section class="panel account-panel"><details id="accountSettings"${settingsOpen?' open':''}><summary class="settings-summary"><div><h2>${t('Конфигурация аккаунта','Account configuration')}</h2><p class="account-summary" id="accountSummary"></p></div><span class="settings-close">${t('Свернуть','Collapse')}</span><span class="settings-open">${t('Изменить','Edit')}</span></summary><div class="settings-actions"><button type="button" class="secondary" id="reset">${t('Начальные настройки','Reset defaults')}</button> <button type="button" class="secondary" id="copy">${t('Скопировать ссылку','Copy share link')}</button></div>
     <div class="field-grid">${['playerClass','economy','planets','scannerLevel','race','experience','techBoost','labLevel','t18','resourceLevel','lithiumLevel','availableSlots','resultsPerScan'].map(k=>field(k,k==='techBoost'?t('Усиливает эффект T18.','Boosts the T18 effect.'):k==='resourceLevel'?t('Одинаковый уровень металла, кристалла и дейтерия.','The same level for metal, crystal and deuterium.'):k==='availableSlots'?t('Число слотов, не уровень улучшения.','Slot count, not an upgrade level.'):k==='resultsPerScan'?t('Число результатов, не уровень улучшения.','Result count, not an upgrade level.'):'')).join('')}</div></details>
+    <div class="auto-fit-control"><label class="auto-fit-label" for="autoFit"><input id="autoFit" type="checkbox"${autoFitEnabled?' checked':''}><span>${t('Автоподбор улучшений под тарелки','Match upgrades to scanner level')}</span></label><p class="note">${t('Подбирает ресурсные подздания, T18 и литий. Меняйте уровень тарелок в настройках аккаунта.','Fits resource sub-buildings, T18 and lithium. Change the scanner level in account settings.')}</p><p class="auto-fit-status" id="autoFitStatus" role="status"></p></div>
     <div class="metrics" id="accountMetrics"></div>
     <p class="status" id="copyStatus" role="status"></p></section>
     <section class="panel flight-panel"><div class="section-top"><h2>${t('Сколько получите за день','Your daily rewards')}</h2></div><div class="field-grid simulator-controls">${field('launchesPerDay')}${field('usedSlots')}<p class="flight-count" id="flightCount"></p><button type="button" class="calculate-button" id="calculateLoot">${t('Рассчитать','Calculate')}</button></div><p class="simulation-status" id="simulationStatus" role="status"></p><p class="note">${t('Один запуск — отправка флотов на выбранное число аномалий.','One launch sends fleets to the chosen number of anomalies.')}</p><div id="results" aria-live="polite"></div></section><div id="averagesMount"></div><div id="investmentMount"></div><div id="modelMount"></div>`;
@@ -62,10 +74,11 @@ function build(){
   document.querySelectorAll('[data-setting]').forEach(el=>el.addEventListener('input',()=>{
     const k=el.dataset.setting;state[k]=typeof O.defaults[k]==='number'?(el.value.trim()===''?NaN:Number(el.value)):el.value;
     if(k==='launchesPerDay'||k==='usedSlots'){updateFlightCount();$('simulationStatus').textContent=t('Нажмите «Рассчитать», чтобы обновить прогноз за день.','Click Calculate to update the daily forecast.');return;}
-    render();
+    applyAutoFit();render();
   }));
-  $('calculateLoot').onclick=()=>{render();$('simulationStatus').textContent=O.validate(state).length?t('Проверьте введённые значения.','Check your inputs.'):t('Расчёт обновлён.','Calculation updated.');};
-  $('reset').onclick=()=>{state={...O.defaults};build();};
+  $('autoFit').onchange=()=>{autoFitEnabled=$('autoFit').checked;applyAutoFit();render();};
+  $('calculateLoot').onclick=()=>{applyAutoFit();render();$('simulationStatus').textContent=O.validate(state).length?t('Проверьте введённые значения.','Check your inputs.'):t('Расчёт обновлён.','Calculation updated.');};
+  $('reset').onclick=()=>{state={...O.defaults};autoFitEnabled=false;autoFitResult=null;build();};
   $('copy').onclick=async()=>{try{await navigator.clipboard.writeText(location.href);$('copyStatus').textContent=t('Ссылка скопирована.','Link copied.');}catch{$('copyStatus').textContent=t('Не удалось скопировать. Скопируйте адрес страницы из браузера.','Copy failed. Copy the address from your browser.');}};
   $('footer').textContent=t('Неофициальный калькулятор сообщества. Диапазоны полей — ограничения калькулятора, не максимальные уровни игры.','Unofficial community calculator. Input ranges are calculator limits, not game level caps.');
   setTheme();render();
@@ -75,6 +88,14 @@ function updateFlightCount(){
 }
 function card(title,value,detail,tone='income'){return `<article class="stat ${tone}"><span>${title}</span><strong title="${n(value,6)}">${tone==='negative'?signedCompact(value):compact(value)}</strong><small>${detail}</small></article>`;}
 function render(){
+  for(const key of ['resourceLevel','t18','lithiumLevel']){$(key).disabled=autoFitEnabled;$(key).value=Number.isFinite(state[key])?state[key]:'';}
+  $('autoFitStatus').textContent=autoFitEnabled?(autoFitResult?
+    `${t('Подобрано: ресурсы','Selected: resources')} ${state.resourceLevel} · T18 ${state.t18} · ${t('литий','lithium')} ${state.lithiumLevel}. `+
+    (autoFitResult.lithiumCovered?t('Литий покрывает ожидаемые расходы на награды и сканы.','Lithium covers expected reward claims and scans.'):t('Даже максимального уровня лития в калькуляторе недостаточно для покрытия расходов.','Even the calculator’s maximum lithium level does not cover spending.'))+
+    (state.resultsPerScan!==6?t(' Цена скана при другом количестве результатов не подтверждена; подбор лития условный.',' Scan pricing for a different result count is unconfirmed; lithium fitting is conditional.'):'')+
+    (autoFitResult.resourceLimit||autoFitResult.t18Limit?t(' Достигнут предел уровней калькулятора.',' Calculator level limit reached.'):''):
+    t('Для автоподбора проверьте настройки аккаунта.','Check account settings to use automatic fitting.')):'';
+  $('autoFitStatus').className='auto-fit-status'+(autoFitResult&&!autoFitResult.lithiumCovered?' negative':'');
   updateFlightCount();
   const errors=O.validate(state);$('validation').hidden=!errors.length;
   $('validation').textContent=errors.length?t('Проверьте настройки: ','Check settings: ')+errors.map(k=>k==='slots'?t('слотов в запуске больше, чем доступно','slots per launch exceed available slots'):fields[k]?label(k):k).join('; '):'';
@@ -114,7 +135,8 @@ function render(){
   syncUrl();
 }
 function modelDetails(){const b=O.baseline;return `<details class="panel model-panel"><summary>${t('Как считается прогноз','How the forecast works')}</summary>
-  <h3>${t('Исходный эксперимент','Original experiment')}</h3><p>${t('Экономика ×10 · 18 планет × тарелка 39 · IAS и поиск 702 · конверсия 4 436 514 лития/ч · скан 2 218 257 лития · 6 результатов. 1 878 аномалий за 313 сканов; выбрано 102 вылета: 62 ресурсных PvP и 40 литиевых. Всего 12 PvE и 90 PvP. Исходный Генерал: PvE ×1,5, PvP ×2; бонус подзданий +62%.','Economy ×10 · 18 planets × scanner 39 · IAS and search 702 · conversion 4,436,514 lithium/h · scan price 2,218,257 lithium · 6 results. 1,878 anomalies from 313 scans; 102 selected flights: 62 resource PvP and 40 lithium missions. In total: 12 PvE and 90 PvP. Original General: PvE ×1.5, PvP ×2; sub-building bonus +62%.')}</p>
+  <h3>${t('Автоподбор улучшений','Automatic upgrade fitting')}</h3><p>${t('Для выбранных тарелок подбор начинается с нулевых уровней ресурсных подзданий и T18. На каждом шаге выбирается улучшение с минимальной стоимостью МСУ за +1% ресурсной награды относительно текущих уровней, пока оно не станет дороже следующего уровня тарелок. Три ресурсных подздания повышаются вместе на всех планетах. T18 подбирается только для Генерала. Затем выбирается минимальный уровень литиевого подздания, покрывающий ожидаемые расходы на получение наград и сканы. Это рекомендуемая конфигурация по выбранному правилу, а не глобальный оптимум и не план улучшения уже построенного аккаунта.','Fitting starts at zero resource sub-building and T18 levels for the chosen scanners. Each step chooses the lowest MSU cost per relative +1% resource reward until further upgrades are more expensive than the next scanner level. All three resource sub-buildings are upgraded together across all planets. T18 is fitted for General only. Lithium then uses the lowest level covering expected reward claims and scans. This is a recommended target under this rule, not a global optimum or an upgrade plan for an existing account.')}</p>
+  <h3>${t('Исходный эксперимент' ,'Original experiment')}</h3><p>${t('Экономика ×10 · 18 планет × тарелка 39 · IAS и поиск 702 · конверсия 4 436 514 лития/ч · скан 2 218 257 лития · 6 результатов. 1 878 аномалий за 313 сканов; выбрано 102 вылета: 62 ресурсных PvP и 40 литиевых. Всего 12 PvE и 90 PvP. Исходный Генерал: PvE ×1,5, PvP ×2; бонус подзданий +62%.','Economy ×10 · 18 planets × scanner 39 · IAS and search 702 · conversion 4,436,514 lithium/h · scan price 2,218,257 lithium · 6 results. 1,878 anomalies from 313 scans; 102 selected flights: 62 resource PvP and 40 lithium missions. In total: 12 PvE and 90 PvP. Original General: PvE ×1.5, PvP ×2; sub-building bonus +62%.')}</p>
   <p>${t('Средние исходного эксперимента: 728 937 762,315527 МСУ ресурсов; 23 137 587,615496 лития получено; 21 717 567,431373 лития на получение. Все награды до расходов.','Original experiment averages: 728,937,762.315527 resource MSU; 23,137,587.615496 lithium received; 21,717,567.431373 lithium claim cost. All rewards are before spending.')}</p>
   <h3>${t('Второй алгоритм отбора','Second selection algorithm')}</h3><ol><li>${t('Ресурсы: только PvP, индивидуальный базовый K лута >12, ресурсная награда с бонусами >200 млн МСУ.','Resources: PvP only, individual base loot K >12, reward including bonuses >200 million MSU.')}</li><li>${t('Литий: награда с бонусами ≥1,5 полной стоимости получения. Для отбора награды приведены к бонусу +62%.','Lithium: boosted reward ≥1.5 times the full claim cost. Selection rewards were normalized to a +62% bonus.')}</li><li>${t('Миссия, подходящая под оба условия, считается один раз.','A mission matching both conditions is counted once.')}</li></ol>
   <div class="table-wrap"><table><thead><tr><th>${t('Режим','Mode')}</th><th>${t('Вылетов','Flights')}</th><th>${t('Базовый МСУ · сумма','Base MSU · sum')}</th><th>${t('Базовый литий · сумма','Base lithium · sum')}</th></tr></thead><tbody>${['pve','pvp'].map(k=>`<tr><td>${k.toUpperCase()}</td><td>${b[k].flights}</td><td>${n(b[k].baseMsuSum,8)}</td><td>${n(b[k].baseLithiumSum,8)}</td></tr>`).join('')}</tbody></table></div>
