@@ -45,3 +45,15 @@ a { color:var(--accent); }
 @media(max-width:1000px) { .field-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 @media(max-width:680px) { .field-grid,.rewards-summary,.daily-grid { grid-template-columns:1fr; } .account-panel,.investment,.flight-panel,.daily-panel,.model-panel { padding:16px; } .ledger { font-size:12px; } }
 @media(max-width:680px) { .metrics { grid-template-columns:1fr; } }
+
+.settings-summary { display:flex; align-items:center; justify-content:space-between; gap:14px; cursor:pointer; list-style:none; }
+.settings-summary::-webkit-details-marker { display:none; }
+.settings-summary h2 { margin:0; }
+.settings-summary > span { color:var(--accent); font-size:13px; white-space:nowrap; }
+.settings-close::after { content:" −"; }
+.settings-open::after { content:" +"; }
+#accountSettings .settings-close { display:none; }
+#accountSettings[open] .settings-close { display:inline; }
+#accountSettings[open] .settings-open { display:none; }
+.settings-actions { display:flex; justify-content:flex-end; gap:8px; flex-wrap:wrap; margin:18px 0; }
+.settings-summary:focus-visible { outline:2px solid var(--accent); outline-offset:4px; border-radius:4px; }

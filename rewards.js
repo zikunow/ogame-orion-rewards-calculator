@@ -3,6 +3,7 @@ const $=id=>document.getElementById(id), O=Orion;
 const params=new URLSearchParams(location.search);
 let lang=params.get('lang')==='en'?'en':'ru';
 let state={...O.defaults};
+let settingsOpen=true;
 for(const key of Object.keys(state)) if(params.has(key)){
   const value=params.get(key);
   state[key]=typeof state[key]==='number'?(value.trim()===''?NaN:Number(value)):typeof state[key]==='boolean'?value==='1':value;
@@ -40,15 +41,16 @@ function build(){
   document.documentElement.lang=lang;
   document.title=t('Калькулятор наград Ориона — OGame','Orion Rewards Calculator — OGame');
   $('title').textContent=t('Калькулятор наград Ориона','Orion Rewards Calculator');
-  $('intro').textContent=t('Готовая конфигурация аккаунта: стоимость с нуля, средние награды выбранных миссий и дневной баланс лития. Все уровни одинаковые на всех планетах.','A ready-to-use account configuration: investment from zero, average selected-mission rewards and daily lithium balance. All planets use the same levels.');
+  $('intro').textContent=t('Рассчитайте стоимость развития аккаунта для Ориона, ожидаемые награды за вылет и за день, а также расход и баланс лития.','Calculate your Orion account investment, expected rewards per flight and per day, and lithium spending and balance.');
   $('oldCalculator').textContent=t('Калькуляторы IAS и T18','IAS and T18 calculators');
   $('themeLabel').textContent=t('Дизайн','Design');$('minimal').textContent=t('Минимализм','Minimal');$('cosmic').textContent=t('Космос','Cosmic');
   for(const l of ['ru','en'])$('lang'+(l==='ru'?'Ru':'En')).setAttribute('aria-pressed',String(lang===l));
-  $('form').innerHTML=`<section class="panel account-panel"><div class="section-top"><h2>${t('Настройки аккаунта','Account settings')}</h2><div><button type="button" class="secondary" id="reset">${t('Начальные настройки','Reset defaults')}</button> <button type="button" class="secondary" id="copy">${t('Скопировать ссылку','Copy share link')}</button></div></div>
-    <div class="field-grid">${['playerClass','economy','planets','scannerLevel','race','experience','techBoost','labLevel','t18','resourceLevel','lithiumLevel','availableSlots','resultsPerScan'].map(k=>field(k,k==='techBoost'?t('Усиливает эффект T18.','Boosts the T18 effect.'):k==='resourceLevel'?t('Одинаковый уровень металла, кристалла и дейтерия.','The same level for metal, crystal and deuterium.'):k==='availableSlots'?t('Число слотов, не уровень улучшения.','Slot count, not an upgrade level.'):k==='resultsPerScan'?t('Число результатов, не уровень улучшения.','Result count, not an upgrade level.'):'')).join('')}</div>
+  $('form').innerHTML=`<section class="panel account-panel"><details id="accountSettings"${settingsOpen?' open':''}><summary class="settings-summary"><h2>${t('Настройки аккаунта','Account settings')}</h2><span class="settings-close">${t('Свернуть','Collapse')}</span><span class="settings-open">${t('Развернуть','Expand')}</span></summary><div class="settings-actions"><button type="button" class="secondary" id="reset">${t('Начальные настройки','Reset defaults')}</button> <button type="button" class="secondary" id="copy">${t('Скопировать ссылку','Copy share link')}</button></div>
+    <div class="field-grid">${['playerClass','economy','planets','scannerLevel','race','experience','techBoost','labLevel','t18','resourceLevel','lithiumLevel','availableSlots','resultsPerScan'].map(k=>field(k,k==='techBoost'?t('Усиливает эффект T18.','Boosts the T18 effect.'):k==='resourceLevel'?t('Одинаковый уровень металла, кристалла и дейтерия.','The same level for metal, crystal and deuterium.'):k==='availableSlots'?t('Число слотов, не уровень улучшения.','Slot count, not an upgrade level.'):k==='resultsPerScan'?t('Число результатов, не уровень улучшения.','Result count, not an upgrade level.'):'')).join('')}</div></details>
     <div class="metrics" id="accountMetrics"></div>
     <p class="status" id="copyStatus" role="status"></p></section>
     <section class="panel flight-panel"><div class="section-top"><h2>${t('Запуски флотов','Fleet launches')}</h2></div><div class="field-grid">${field('launchesPerDay')}${field('usedSlots')}</div><p class="note">${t('Запуск флотов — отправка выбранного количества слотов. Внутренние волны аномалии здесь не задаются.','A fleet launch sends the chosen number of slots. Internal anomaly waves are not configured here.')}</p></section>`;
+  $('accountSettings').addEventListener('toggle',()=>{settingsOpen=$('accountSettings').open;});
   document.querySelectorAll('[data-setting]').forEach(el=>el.addEventListener('input',()=>{
     const k=el.dataset.setting;state[k]=typeof O.defaults[k]==='number'?(el.value.trim()===''?NaN:Number(el.value)):el.value;render();
   }));
