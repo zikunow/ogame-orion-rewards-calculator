@@ -57,3 +57,10 @@ a { color:var(--accent); }
 #accountSettings[open] .settings-open { display:none; }
 .settings-actions { display:flex; justify-content:flex-end; gap:8px; flex-wrap:wrap; margin:18px 0; }
 .settings-summary:focus-visible { outline:2px solid var(--accent); outline-offset:4px; border-radius:4px; }
+
+.investment-body { margin-top:20px; }
+.investment .investment-close { display:none; }
+.investment[open] .investment-close { display:inline; }
+.investment[open] .investment-open { display:none; }
+.investment-close::after { content:" −"; }
+.investment-open::after { content:" +"; }

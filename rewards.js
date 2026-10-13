@@ -4,6 +4,7 @@ const params=new URLSearchParams(location.search);
 let lang=params.get('lang')==='en'?'en':'ru';
 let state={...O.defaults};
 let settingsOpen=false;
+let investmentOpen=false;
 for(const key of Object.keys(state)) if(params.has(key)){
   const value=params.get(key);
   state[key]=typeof state[key]==='number'?(value.trim()===''?NaN:Number(value)):typeof state[key]==='boolean'?value==='1':value;
@@ -49,6 +50,7 @@ function build(){
     <div class="field-grid">${['playerClass','economy','planets','scannerLevel','race','experience','techBoost','labLevel','t18','resourceLevel','lithiumLevel','availableSlots','resultsPerScan'].map(k=>field(k,k==='techBoost'?t('Усиливает эффект T18.','Boosts the T18 effect.'):k==='resourceLevel'?t('Одинаковый уровень металла, кристалла и дейтерия.','The same level for metal, crystal and deuterium.'):k==='availableSlots'?t('Число слотов, не уровень улучшения.','Slot count, not an upgrade level.'):k==='resultsPerScan'?t('Число результатов, не уровень улучшения.','Result count, not an upgrade level.'):'')).join('')}</div></details>
     <div class="metrics" id="accountMetrics"></div>
     <p class="status" id="copyStatus" role="status"></p></section>
+    <div id="investmentMount"></div>
     <section class="panel flight-panel"><div class="section-top"><h2>${t('Запуски флотов','Fleet launches')}</h2></div><div class="field-grid">${field('launchesPerDay')}${field('usedSlots')}</div><p class="note">${t('Запуск флотов — отправка выбранного количества слотов. Внутренние волны аномалии здесь не задаются.','A fleet launch sends the chosen number of slots. Internal anomaly waves are not configured here.')}</p></section>`;
   $('accountSettings').addEventListener('toggle',()=>{settingsOpen=$('accountSettings').open;});
   document.querySelectorAll('[data-setting]').forEach(el=>el.addEventListener('input',()=>{
@@ -64,7 +66,7 @@ function render(){
   const errors=O.validate(state);$('validation').hidden=!errors.length;
   $('validation').textContent=errors.length?t('Проверьте настройки: ','Check settings: ')+errors.map(k=>k==='slots'?t('слотов в запуске больше, чем доступно','slots per launch exceed available slots'):fields[k]?label(k):k).join('; '):'';
   $('copy').disabled=Boolean(errors.length);
-  if(errors.length){$('results').innerHTML='';$('accountMetrics').textContent='—';for(const key of ['experience','labLevel','t18','lithiumLevel'])$('help-'+key).textContent='—';return;}
+  if(errors.length){$('results').innerHTML='';$('investmentMount').innerHTML='';$('accountMetrics').textContent='—';for(const key of ['experience','labLevel','t18','lithiumLevel'])$('help-'+key).textContent='—';return;}
   const s=state,r=O.calculate(s),d=r.daily;
   $('help-experience').textContent=t('Бонус опыта: +','Experience boost: +')+pct(.001*s.experience)+t(' · Максимум +10%',' · Maximum +10%');
   $('help-labLevel').textContent=t(...races[s.race])+t(' · Скидка: ',' · Discount: ')+pct(Math.min(.0025*s.labLevel,.25));
@@ -78,11 +80,12 @@ function render(){
   const resultWarning=s.resultsPerScan!==6?t('Цена скана рассчитана по модели Q/2 для шести результатов. Цена при другом количестве результатов не подтверждена; расходы и баланс ниже условные.','Scan price uses the Q/2 model for six results. Pricing at other result counts is unconfirmed; spending and balance below are conditional.'):'';
   const classWarning=s.playerClass!=='general'?t('Режим без бонуса Генерала. Эффекты Коллекционера и Исследователя в прогноз не включены.','No-General-bonus mode. Collector and Discoverer effects are not included in the forecast.'):'';
   const warn=x=>x?`<p class="model-warning">${x}</p>`:'';
-  $('results').innerHTML=`<section class="panel investment"><div class="section-top"><h2>${t('Стоимость конфигурации с нуля','Configuration cost from zero')}</h2></div>
+  $('investmentMount').innerHTML=`<details id="investmentDetails" class="panel investment"${investmentOpen?' open':''}><summary class="settings-summary"><h2>${t('Стоимость конфигурации с нуля','Configuration cost from zero')}</h2><span class="investment-close">${t('Свернуть','Collapse')}</span><span class="investment-open">${t('Развернуть','Expand')}</span></summary><div class="investment-body">
     <div class="investment-total">${exactMsu(r.total)} ${msuLabel()}</div>
     <p class="note">${t('Без стоимости открытия слотов и результатов скана: цены улучшений пока не подтверждены. Здания усиления ФЖ и скидки исследований не включены; их эффекты учтены.','Excludes slot and scan-result unlock costs: upgrade prices are unconfirmed. Lifeform boost and research discount buildings are excluded; their effects are applied.')}</p>
-    <div class="table-wrap"><table><thead><tr><th>${t('Компонент · все планеты','Component · all planets')}</th><th>${t('Металл','Metal')}</th><th>${t('Кристалл','Crystal')}</th><th>${t('Дейтерий','Deuterium')}</th><th>${msuLabel()}</th></tr></thead><tbody>${Object.entries(r.costs).map(([k,v])=>row(componentLabels[k],v)).join('')}</tbody><tfoot>${row(t('Итого','Total'),r.total)}</tfoot></table></div></section>
-    <section aria-label="${t('Средние на один вылет','Averages per flight')}"><h2>${t('Среднее на один выбранный вылет','Average per selected flight')}</h2>
+    <div class="table-wrap"><table><thead><tr><th>${t('Компонент · все планеты','Component · all planets')}</th><th>${t('Металл','Metal')}</th><th>${t('Кристалл','Crystal')}</th><th>${t('Дейтерий','Deuterium')}</th><th>${msuLabel()}</th></tr></thead><tbody>${Object.entries(r.costs).map(([k,v])=>row(componentLabels[k],v)).join('')}</tbody><tfoot>${row(t('Итого','Total'),r.total)}</tfoot></table></div></div></details>`;
+  $('investmentDetails').addEventListener('toggle',()=>{investmentOpen=$('investmentDetails').open;});
+  $('results').innerHTML=`<section aria-label="${t('Средние на один вылет','Averages per flight')}"><h2>${t('Среднее на один выбранный вылет','Average per selected flight')}</h2>
     <div class="summary-grid rewards-summary">${card(t('Ресурсная награда · МСУ','Resource reward · MSU'),r.rewards.resource,t('До расходов, топлива и потерь.','Before spending, fuel and losses.'))}${card(t('Литий получен','Lithium received'),r.rewards.lithium,t('Включая вылеты без литиевой находки.','Includes flights with no lithium find.'))}${card(t('Литий на получение награды','Lithium to claim reward'),r.claim,t('Сканы оплачиваются отдельно.','Scans are paid separately.'))}</div>
     ${warn(classWarning)}<p class="note">${t('Состав отбора фиксирован: 102 миссии. При изменении параметров выборка не пересобирается по порогам.','Selection is fixed at 102 missions. Changing settings does not reselect missions using the thresholds.')}</p></section>
     <section class="panel daily-panel"><div class="section-top"><h2>${t('Прогноз за день','Daily forecast')}</h2><span class="note">${n(s.launchesPerDay,0)} × ${n(s.usedSlots,0)} = ${n(d.flights,0)} ${t('вылетов','flights')}</span></div>
