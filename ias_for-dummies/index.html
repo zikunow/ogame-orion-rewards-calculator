@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Орион — простой калькулятор наград</title>
+  <meta name="description" content="Два числа: бюджет в МСУ и количество волн. Калькулятор сам подбирает улучшения и показывает ожидаемую награду Ориона.">
+  <link rel="stylesheet" href="simple.css?v=1">
+  <script defer src="../core.js?v=4"></script><script defer src="simple-core.js?v=1"></script><script defer src="simple.js?v=1"></script>
+</head>
+<body>
+<main>
+  <header><a class="brand" href="../">OGAME <span> / ОРИОН</span></a><a class="full-link" href="../">Полный калькулятор ↗</a></header>
+  <section class="intro"><p class="eyebrow">ПРОСТОЙ РАСЧЁТ</p><h1>Сколько вложить.<br>Сколько получить.</h1><p class="lead">Два числа — и готовый прогноз наград.<br>Тарелки и улучшения подберём сами.</p></section>
+  <section class="calculator" aria-label="Расчёт наград">
+    <form id="simpleForm" novalidate>
+      <div class="fields"><label for="budget"><span>Сколько готовы вложить?</span><div class="input-unit"><input id="budget" name="budget" type="number" inputmode="decimal" min="0" max="9000000" step="any" value="100" required aria-describedby="budgetHelp"><span>млрд МСУ</span></div><small id="budgetHelp">100 = 100 миллиардов МСУ. Развитие с нуля.</small></label>
+      <label for="waves"><span>Сколько волн в день?</span><div class="input-unit"><input id="waves" name="waves" type="number" inputmode="numeric" min="0" max="1000" step="1" value="6" required aria-describedby="wavesHelp"><span>волн</span></div><small id="wavesHelp">Одна волна = 6 вылетов в аномалии.</small></label></div>
+      <button type="submit" id="calculate">Показать награду <span aria-hidden="true">→</span></button>
+      <p id="error" class="error" role="alert" hidden></p><p id="pending" class="pending" role="status" hidden>Нажмите «Показать награду», чтобы обновить прогноз.</p>
+    </form>
+    <div id="output" aria-live="polite"></div>
+  </section>
+  <p class="assumptions">18 планет · Генерал · экономика ×10 · 6 слотов</p>
+  <details class="explanation"><summary>Что входит в расчёт?</summary><p>Подбираем тарелки, три ресурсных подздания, литиевое подздание и T18 на всех 18 планетах. Из доступных конфигураций выбираем максимальную ожидаемую ресурсную награду в пределах бюджета. Литий подбираем так, чтобы его средние находки покрывали получение наград и поиск аномалий.</p><p>Опыт ФЖ 100 (+10%), усиление технологий 7,5%, здание скидки исследований 25. Стоимость этих зданий ФЖ и открытия слотов и результатов скана в бюджет не включена. Готовый аккаунт здесь не моделируется: бюджет считается на указанные улучшения с нуля.</p><p>Награда — прогноз по экспериментальным данным при отборе выгодных аномалий. Реальные находки случайны. Топливо, потери флота, корабли, предметы, артефакты и XP в ресурсные МСУ не включены. Литий показан отдельно. Конверсия не считается бесплатным доходом.</p><p>МСУ = металл + 1,5 × кристалл + 3 × дейтерий. «Волна» здесь означает одновременную отправку шести флотов, а не внутренние волны одной аномалии.</p><p>Подбор ограничен уровнями калькулятора: тарелки 1–80, ресурсные и литиевое подздания 0–50, T18 0–80. Для других настроек используйте <a href="../">полный калькулятор</a>.</p></details>
+  <footer>Неофициальный калькулятор сообщества OGame</footer>
+  <noscript>Для расчёта включите JavaScript.</noscript>
+</main>
+</body></html>

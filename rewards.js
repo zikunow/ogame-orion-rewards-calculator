@@ -61,7 +61,7 @@ function build(){
   document.title=t('Награды Ориона — OGame','Orion Rewards — OGame');
   $('title').textContent=t('Награды Ориона','Orion Rewards');
   $('intro').textContent=t('Стоимость развития, награды и баланс лития.','Account investment, rewards and lithium balance.');
-  for(const [id,ru,en] of [['navIas','Калькулятор тарелок (IAS)','Scanner calculator (IAS)'],['navResources','Калькулятор подзданий','Sub-building calculator'],['navGeneral','Калькулятор T18 Генерала','General T18 calculator'],['navRewards','Награды Ориона','Orion rewards'],['navPlanner','Планировщик улучшений','Upgrade planner']]) $(id).textContent=t(ru,en);
+  for(const [id,ru,en] of [['navIas','Калькулятор тарелок (IAS)','Scanner calculator (IAS)'],['navResources','Калькулятор подзданий','Sub-building calculator'],['navGeneral','Калькулятор T18 Генерала','General T18 calculator'],['navRewards','Награды Ориона','Orion rewards'],['navSimple','Простой калькулятор','Simple calculator'],['navPlanner','Планировщик улучшений','Upgrade planner']]) $(id).textContent=t(ru,en);
   $('calculatorSelect').setAttribute('aria-label',t('Калькулятор','Calculator'));
   $('themeLabel').textContent=t('Дизайн','Design');$('minimal').textContent=t('Минимализм','Minimal');$('cosmic').textContent=t('Космос','Cosmic');
   for(const l of ['ru','en'])$('lang'+(l==='ru'?'Ru':'En')).setAttribute('aria-pressed',String(lang===l));
