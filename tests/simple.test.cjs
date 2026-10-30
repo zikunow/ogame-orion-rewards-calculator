@@ -29,7 +29,7 @@ test('simple UI uses only budget, removes old waves parameter and links identica
  const elements={};const el=id=>elements[id]??=({value:'100',textContent:'',innerHTML:'',hidden:false,handlers:{},addEventListener(k,f){this.handlers[k]=f}});
  let address='';const context=vm.createContext({SimpleOrion:S,URL,URLSearchParams,Intl,Number,Math,BigInt,document:{getElementById:el},location:{href:'https://example.com/ias_for-dummies/?budget=100&waves=6',search:'?budget=100&waves=6'},history:{replaceState(a,b,url){address=String(url)}}});
  vm.runInContext(fs.readFileSync(require.resolve('../ias_for-dummies/simple.js'),'utf8'),context);
- assert.match(el('output').innerHTML,/В календарный день/);assert.match(el('output').innerHTML,/Одна сессия/);assert.match(el('output').innerHTML,/Следующий заход/);assert.doesNotMatch(address,/waves/);
+ assert.match(el('output').innerHTML,/Ресурсы за сессию/);assert.match(el('output').innerHTML,/Одна сессия/);assert.match(el('output').innerHTML,/Следующий заход/);assert.doesNotMatch(address,/waves/);
  const href=el('output').innerHTML.match(/class="result-link" href="([^"]+)"/)[1],params=new URL(href).searchParams,fit=S.optimize(100000000000n);
  for(const key of ['scannerLevel','metal','crystal','deut','lithium','t18'])assert.equal(Number(params.get(key)),fit.configuration[key]);
  el('budget').value='0';el('simpleForm').handlers.submit({preventDefault(){}});assert.equal(el('error').hidden,false);assert.equal(el('output').innerHTML,'');

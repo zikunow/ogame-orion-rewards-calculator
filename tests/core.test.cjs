@@ -39,7 +39,7 @@ test('full UI handles legacy links, language, validation and stale results',()=>
  const elements={};const el=id=>elements[id]??=({value:'',textContent:'',innerHTML:'',hidden:false,disabled:false,handlers:{},addEventListener(k,f){this.handlers[k]=f},setAttribute(){}});
  const context=vm.createContext({Orion:O,URL,URLSearchParams,Intl,Number,BigInt,Math,document:{getElementById:el,documentElement:{dataset:{}}},location:{href:'https://example.com/',search:'?resourceLevel=17&lithiumLevel=17&availableSlots=6&t18=0'},history:{replaceState(){}},navigator:{clipboard:{async writeText(){}}}});
  vm.runInContext(fs.readFileSync(require.resolve('../rewards.js'),'utf8'),context);
- assert.match(el('cashbackHelp').textContent,/8,06/);assert.match(el('results').innerHTML,/162 \/ 1998/);assert.match(el('results').innerHTML,/В календарный день/);
+ assert.match(el('cashbackHelp').textContent,/8,06/);assert.match(el('results').innerHTML,/162 \/ 1998/);assert.match(el('results').innerHTML,/Ресурсы за сессию/);
  el('planets').value='0';el('planets').handlers.input();assert.equal(el('results').innerHTML,'');assert.equal(el('validation').hidden,false);
- el('reset').handlers.click();el('langEn').handlers.click();assert.match(el('results').innerHTML,/Per calendar day/);
+ el('reset').handlers.click();el('langEn').handlers.click();assert.match(el('results').innerHTML,/Resources per session/);
 });
