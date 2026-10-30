@@ -182,3 +182,6 @@ html[data-theme="cosmic"] .flight-panel { box-shadow:0 0 30px rgba(0,180,190,.06
 .summary-grid.rewards-summary{grid-template-columns:repeat(3,minmax(0,1fr))}.panel.daily-panel{padding:22px;margin:18px 0}@media(max-width:1000px){.summary-grid.rewards-summary{grid-template-columns:1fr}}@media(max-width:680px){.panel.daily-panel{padding:16px}}
 
 .summary-grid.rewards-summary{grid-template-columns:repeat(4,minmax(0,1fr))}@media(max-width:1000px){.summary-grid.rewards-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:680px){.summary-grid.rewards-summary{grid-template-columns:1fr}}
+
+.daily-panel > summary { cursor:pointer; font-size:18px; font-weight:600; }
+.daily-panel[open] > summary { margin-bottom:20px; }
