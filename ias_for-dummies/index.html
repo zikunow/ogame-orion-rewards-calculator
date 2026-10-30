@@ -1,28 +1,18 @@
 <!doctype html>
-<html lang="ru">
-<head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Орион — простой калькулятор наград</title>
-  <meta name="description" content="Два числа: бюджет в МСУ и количество волн. Калькулятор сам подбирает улучшения и показывает ожидаемую награду Ориона.">
-  <link rel="stylesheet" href="simple.css?v=1">
-  <script defer src="../core.js?v=4"></script><script defer src="simple-core.js?v=1"></script><script defer src="simple.js?v=1"></script>
-</head>
-<body>
-<main>
-  <header><a class="brand" href="../">OGAME <span> / ОРИОН</span></a><a class="full-link" href="../">Полный калькулятор ↗</a></header>
-  <section class="intro"><p class="eyebrow">ПРОСТОЙ РАСЧЁТ</p><h1>Сколько вложить.<br>Сколько получить.</h1><p class="lead">Два числа — и готовый прогноз наград.<br>Тарелки и улучшения подберём сами.</p></section>
-  <section class="calculator" aria-label="Расчёт наград">
-    <form id="simpleForm" novalidate>
-      <div class="fields"><label for="budget"><span>Сколько готовы вложить?</span><div class="input-unit"><input id="budget" name="budget" type="number" inputmode="decimal" min="0" max="9000000" step="any" value="100" required aria-describedby="budgetHelp"><span>млрд МСУ</span></div><small id="budgetHelp">100 = 100 миллиардов МСУ. Развитие с нуля.</small></label>
-      <label for="waves"><span>Сколько волн в день?</span><div class="input-unit"><input id="waves" name="waves" type="number" inputmode="numeric" min="0" max="1000" step="1" value="6" required aria-describedby="wavesHelp"><span>волн</span></div><small id="wavesHelp">Одна волна = 6 вылетов в аномалии.</small></label></div>
-      <button type="submit" id="calculate">Показать награду <span aria-hidden="true">→</span></button>
-      <p id="error" class="error" role="alert" hidden></p><p id="pending" class="pending" role="status" hidden>Нажмите «Показать награду», чтобы обновить прогноз.</p>
-    </form>
-    <div id="output" aria-live="polite"></div>
-  </section>
-  <p class="assumptions">18 планет · Генерал · экономика ×10 · 6 слотов</p>
-  <details class="explanation"><summary>Что входит в расчёт?</summary><p>Подбираем тарелки, три ресурсных подздания, литиевое подздание и T18 на всех 18 планетах. Из доступных конфигураций выбираем максимальную ожидаемую ресурсную награду в пределах бюджета. Литий подбираем так, чтобы его средние находки покрывали получение наград и поиск аномалий.</p><p>Опыт ФЖ 100 (+10%), усиление технологий 7,5%, здание скидки исследований 25. Стоимость этих зданий ФЖ и открытия слотов и результатов скана в бюджет не включена. Готовый аккаунт здесь не моделируется: бюджет считается на указанные улучшения с нуля.</p><p>Награда — прогноз по экспериментальным данным при отборе выгодных аномалий. Реальные находки случайны. Топливо, потери флота, корабли, предметы, артефакты и XP в ресурсные МСУ не включены. Литий показан отдельно. Конверсия не считается бесплатным доходом.</p><p>МСУ = металл + 1,5 × кристалл + 3 × дейтерий. «Волна» здесь означает одновременную отправку шести флотов, а не внутренние волны одной аномалии.</p><p>Подбор ограничен уровнями калькулятора: тарелки 1–80, ресурсные и литиевое подздания 0–50, T18 0–80. Для других настроек используйте <a href="../">полный калькулятор</a>.</p></details>
-  <footer>Неофициальный калькулятор сообщества OGame</footer>
-  <noscript>Для расчёта включите JavaScript.</noscript>
-</main>
-</body></html>
+<html lang="ru"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Орион — доход по бюджету вложений</title>
+<meta name="description" content="Бюджет развития Ориона: доход МСУ в календарный день, часы сессии и периодичность заходов с учётом лития и кэшбэка.">
+<link rel="stylesheet" href="simple.css?v=2">
+<script defer src="../shared/planner-costs.js"></script><script defer src="https://zikunow.github.io/ogame-orion-upgrade-planner/anomaly-sample.js"></script><script defer src="../shared/planner-core.js"></script><script defer src="../core.js?v=7"></script><script defer src="simple-core.js?v=2"></script><script defer src="simple.js?v=2"></script>
+</head><body><main>
+<header><a class="brand" href="../">OGAME <span>/ ОРИОН</span></a><a class="full-link" href="../">Полный калькулятор ↗</a></header>
+<section class="intro"><p class="eyebrow">ДОХОД ПО БЮДЖЕТУ</p><h1>Сколько вложить.<br>Как часто играть.</h1><p class="lead">Введите бюджет — подберём улучшения и оценим доход,<br>длительность сессии и время до следующего захода.</p></section>
+<section class="calculator" aria-label="Расчёт дохода"><form id="simpleForm" novalidate><div class="fields"><label for="budget"><span>Бюджет развития с нуля</span><div class="input-unit"><input id="budget" name="budget" type="number" inputmode="decimal" min="0" max="9000000" step="any" value="100" required aria-describedby="budgetHelp"><span>млрд МСУ</span></div><small id="budgetHelp">100 = 100 миллиардов МСУ инвестиций в улучшения.</small></label></div><button type="submit" id="calculate">Рассчитать <span aria-hidden="true">→</span></button><p id="error" class="error" role="alert" hidden></p><p id="pending" class="pending" role="status" hidden>Бюджет изменён. Нажмите «Рассчитать».</p></form><div id="output" aria-live="polite"></div></section>
+<p class="assumptions">18 планет · Генерал · экономика ×10 · военный флот ×2 · 6 слотов<br>Аномалии от 28,4 МСУ/литий · резерв 20% недельного запаса</p>
+<details class="explanation"><summary>Стратегия и условия расчёта</summary>
+<p>Накапливаем недельный запас лития, выбираем подходящие аномалии и летаем до остатка около 20%. Затем ждём полного пополнения. Доход в день учитывает и полёты, и ожидание.</p>
+<p>Подбираем тарелки, T18, литиевое здание и общий уровень трёх ресурсных зданий на всех планетах. Максимизируем устойчивый ресурсный доход в пределах бюджета среди этих конфигураций. Для готового аккаунта используйте полный калькулятор.</p>
+<p>Средний кэшбэк = 5% × (1 + бонус литиевого здания). Это рабочее допущение: точная формула патча не подтверждена. Сканы оплачиваются полностью.</p>
+<p>Опыт ФЖ 100, усиление T18 зданием 7,5%, здание скидки исследований 25. Стоимость поддержки ФЖ, открытия слотов и результатов скана не включена. Используются 333 скана от 30.10.2026; награды и цены масштабируются по производству лития. Опорные множители Генерала 1,5 / 2 приняты как в исходном анализе; дополнительное усиление в исходных сканах отдельно не зафиксировано.</p>
+<p>МСУ = металл + 1,5 × кристалл + 3 × дейтерий. Доход до топлива, потерь и стоимости конвертации лития. Корабли и другие призы не оценены. Часы сессии — оценка без дополнительного возврата флота, ручных действий и сна.</p></details>
+<footer>Неофициальный калькулятор сообщества OGame</footer><noscript>Для расчёта включите JavaScript.</noscript></main></body></html>

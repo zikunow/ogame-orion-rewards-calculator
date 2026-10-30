@@ -1,106 +1,38 @@
-/* Formulas ported from the IAS project's app.js, resources.js and general.js.
- * Reward baseline supplied by the experiment; selection is held fixed. */
-(function (root) {
+/* Uses the same empirical economics/session engine as the upgrade planner. */
+(function(root){
   'use strict';
-  const baseline = Object.freeze({economy:10,planets:18,scannerLevel:39,ias:702,lithiumPerHour:4436514,scanPrice:2218257,resultsPerScan:6,scans:313,anomalies:1878,selectedFlights:102,meanClaimCost:21717567.43137255,
-    pve:{flights:12,baseMsuSum:247005407.19766924,baseLithiumSum:107452034.20347393},
-    pvp:{flights:90,baseMsuSum:22762786610.090557,baseLithiumSum:647816510.3907931}});
-  const defaults = Object.freeze({playerClass:'general',economy:10,planets:18,scannerLevel:39,race:'mecha',experience:100,techBoost:7.5,labLevel:25,t18:7,resourceLevel:15,lithiumLevel:18,availableSlots:6,resultsPerScan:6,launchesPerDay:6,usedSlots:6});
-  const ranges={economy:[1,10],planets:[1,50],scannerLevel:[1,80],experience:[0,100],techBoost:[0,1000],labLevel:[0,100],t18:[0,80],resourceLevel:[0,50],lithiumLevel:[0,50],availableSlots:[1,100],resultsPerScan:[1,100],launchesPerDay:[0,1000],usedSlots:[1,100]};
-  function validate(s){
-    const errors=[];
-    for(const [key,[min,max]] of Object.entries(ranges)) if(!Number.isFinite(s[key])||s[key]<min||s[key]>max||(key!=='techBoost'&&!Number.isInteger(s[key]))) errors.push(key);
-    if(!['general','collector','discoverer'].includes(s.playerClass)) errors.push('playerClass');
-    if(!['human','rocktal','mecha','kaelesh'].includes(s.race)) errors.push('race');
-    if(s.usedSlots>s.availableSlots) errors.push('slots');
-    return errors;
-  }
+  const node=typeof module!=='undefined'&&module.exports;
+  const P=node?require('./shared/planner-core.js'):root.OrionPlanner;
+  const C=node?require('./shared/planner-costs.js'):root.OrionCosts;
+  const defaults=Object.freeze({...P.defaults,race:'mecha'});
   const zero=()=>({metal:0n,crystal:0n,deut:0n});
   const add=(a,b)=>({metal:a.metal+b.metal,crystal:a.crystal+b.crystal,deut:a.deut+b.deut});
-  const scale=(a,p)=>Object.fromEntries(Object.entries(a).map(([k,v])=>[k,v*BigInt(p)]));
-  function fromArray(a){return {metal:a[0],crystal:a[1],deut:a[2]};}
-  function scannerCostAtLevel(l){
-    if(!l)return zero();
-    const n=3n**BigInt(l-1),d=2n**BigInt(l-1);
-    return fromArray([90n,45n,15n].map(b=>(b*n*2n+d)/(2n*d)));
-  }
-  const bases={metal:[112500n,37500n,18000n],crystal:[37500n,67500n,27000n],deut:[30000n,37500n,45000n],lithium:[52500n,37500n,37500n]};
-  function resourceCostAtLevel(l,type){
-    if(!l)return zero();
-    const n=3n**BigInt(l-1),d=2n**BigInt(l-1);
-    return fromArray(bases[type].map(b=>b*n/d));
-  }
-  function generalCostAtLevel(l,h){
-    if(!l)return zero();
-    const n=BigInt(l)*17n**BigInt(l-1)*BigInt(400-Math.min(h,100)),d=10n**BigInt(l-1)*400n;
-    return fromArray([300000n,180000n,120000n].map(b=>b*n/d));
-  }
-  function cumulative(l,p,fn){let a=zero();for(let i=1;i<=l;i++)a=add(a,fn(i));return scale(a,p);}
-  // Twice MSU stays integral even when crystal has a half-MSU contribution.
-  const twiceMsu=a=>2n*a.metal+3n*a.crystal+6n*a.deut;
-  // Linear economy model; the experiment was measured at economy ×10.
-  const lithiumPerPlanet=(l,economy=10)=>l?Number(4224n*BigInt(economy)*BigInt(l)*11n**BigInt(l-1)/(250n*10n**BigInt(l-1))):0;
-  function meanRewards(pve,pvp,resourceBonus,lithiumBonus,scannerScale=1,lithiumScale=1){return {
-    resource:(baseline.pve.baseMsuSum*pve+baseline.pvp.baseMsuSum*pvp)/102*scannerScale*(1+resourceBonus),
-    lithium:(baseline.pve.baseLithiumSum*pve+baseline.pvp.baseLithiumSum*pvp)/102*lithiumScale*(1+lithiumBonus)};}
-  function calculate(s){
+  function cumulative(level,planets,fn){let sum=zero();for(let i=1;i<=level;i++)sum=add(sum,fn(i));return Object.fromEntries(Object.entries(sum).map(([k,v])=>[k,v*BigInt(planets)]));}
+  function validate(s){const errors=P.validate(s);if(!['human','rocktal','mecha','kaelesh'].includes(s.race))errors.push('race');return errors;}
+  function costs(s){return {
+    scanner:cumulative(s.scannerLevel,s.planets,C.scannerCostAtLevel),
+    metal:cumulative(s.metal,s.planets,l=>C.resourceCostAtLevel(l,'metal')),
+    crystal:cumulative(s.crystal,s.planets,l=>C.resourceCostAtLevel(l,'crystal')),
+    deut:cumulative(s.deut,s.planets,l=>C.resourceCostAtLevel(l,'deut')),
+    lithium:cumulative(s.lithium,s.planets,l=>C.resourceCostAtLevel(l,'lithium')),
+    t18:cumulative(s.t18,s.planets,l=>C.generalCostAtLevel(l,s.labLevel))
+  };}
+  function calculate(s,{withSession=true,runs=256}={}){
     const errors=validate(s);if(errors.length)throw new RangeError(errors.join(','));
-    const ias=s.planets*s.scannerLevel,q=s.planets*lithiumPerPlanet(s.scannerLevel,s.economy),scannerScale=q/baseline.lithiumPerHour;
-    const economyScale=s.economy/baseline.economy;
-    const scannerOnlyScale=s.planets*lithiumPerPlanet(s.scannerLevel)/baseline.lithiumPerHour;
-    const enhancement=.002*s.t18*s.planets*(1+.001*s.experience+s.techBoost/100);
-    const pve=s.playerClass==='general'?1.5+.5*enhancement:1,pvp=s.playerClass==='general'?2+enhancement:1;
-    const resourceBonus=.002*s.planets*s.resourceLevel,lithiumBonus=.002*s.planets*s.lithiumLevel;
-    const rewards=meanRewards(pve,pvp,resourceBonus,lithiumBonus,scannerScale,scannerScale);
-    const claim=baseline.meanClaimCost*scannerScale,scan=q/2,scansPerFlight=1/(s.resultsPerScan*(102/1878));
-    const flights=s.launchesPerDay*s.usedSlots,scans=flights*scansPerFlight;
-    const costs={scanner:cumulative(s.scannerLevel,s.planets,scannerCostAtLevel),
-      metal:cumulative(s.resourceLevel,s.planets,l=>resourceCostAtLevel(l,'metal')),
-      crystal:cumulative(s.resourceLevel,s.planets,l=>resourceCostAtLevel(l,'crystal')),
-      deut:cumulative(s.resourceLevel,s.planets,l=>resourceCostAtLevel(l,'deut')),
-      lithium:cumulative(s.lithiumLevel,s.planets,l=>resourceCostAtLevel(l,'lithium')),
-      t18:cumulative(s.t18,s.planets,l=>generalCostAtLevel(l,s.labLevel))};
-    const total=Object.values(costs).reduce(add,zero());
-    return {ias,q,scannerScale,scannerOnlyScale,economyScale,enhancement,pve,pvp,resourceBonus,lithiumBonus,rewards,claim,scan,scansPerFlight,costs,total,
-      daily:{flights,scans,scanBudget:Math.ceil(scans)*scan,resources:rewards.resource*flights,lithium:rewards.lithium*flights,claimCost:claim*flights,scanCost:scans*scan,lithiumChange:(rewards.lithium-claim)*flights-scans*scan}};
+    const value=P.value(s),components=costs(s),total=Object.values(components).reduce(add,zero());
+    return {...value,costs:components,total,session:withSession?P.session(s,runs):null};
   }
-  // Preserve existing levels: automatic fitting only adds upgrades.
-  // Compare marginal MSU per relative +1% reward with the next scanner level.
-  function autoFit(s){
-    const target={...s};
-    const errors=validate(target);if(errors.length)throw new RangeError(errors.join(','));
-    const rewardAt=(u,t,v=0)=>{
-      const e=.002*t*s.planets*(1+.001*s.experience+s.techBoost/100);
-      return meanRewards(s.playerClass==='general'?1.5+.5*e:1,s.playerClass==='general'?2+e:1,.002*s.planets*u,.002*s.planets*v);
-    };
-    const scannerGain=(lithiumPerPlanet(s.scannerLevel+1,s.economy)/lithiumPerPlanet(s.scannerLevel,s.economy)-1)*100;
-    const scannerMsu=Number(twiceMsu(scale(scannerCostAtLevel(s.scannerLevel+1),s.planets)))/2;
-    const scannerMsuPerPercent=scannerMsu/scannerGain;
-    const candidate=(key)=>{
-      const next=target[key]+1;if(next>ranges[key][1]||(key==='t18'&&s.playerClass!=='general'))return null;
-      const before=rewardAt(target.resourceLevel,target.t18).resource;
-      const after=rewardAt(key==='resourceLevel'?next:target.resourceLevel,key==='t18'?next:target.t18).resource;
-      const gainPercent=(after/before-1)*100;
-      const cost=key==='t18'?generalCostAtLevel(next,s.labLevel):['metal','crystal','deut'].reduce((a,k)=>add(a,resourceCostAtLevel(next,k)),zero());
-      const msu=Number(twiceMsu(scale(cost,s.planets)))/2;
-      return {key,level:next,gainPercent,msu,msuPerPercent:gainPercent>0?msu/gainPercent:Infinity};
-    };
-    const steps=[];
-    while(true){
-      const choices=['resourceLevel','t18'].map(candidate).filter(Boolean).sort((a,b)=>a.msuPerPercent-b.msuPerPercent);
-      const best=choices[0];if(!best||best.msuPerPercent>scannerMsuPerPercent)break;
-      target[best.key]=best.level;steps.push(best);
+  function autoFit(initial){
+    const errors=validate(initial);if(errors.length)throw new RangeError(errors.join(','));
+    let s={...initial};const steps=[];
+    for(let i=0;i<400;i++){
+      const choices=P.candidates(s),scanner=choices.find(c=>c.type==='scannerLevel');
+      const best=choices.find(c=>c.type!=='scannerLevel'&&c.dailyGain>0);
+      if(!best||!scanner||best.efficiency<=scanner.efficiency)break;
+      steps.push(best);s=best.state;
     }
-    // Scale cancels: claim and expected search cost and lithium rewards all scale by Q.
-    const scansPerFlight=1/(s.resultsPerScan*(baseline.selectedFlights/baseline.anomalies));
-    const spending=baseline.meanClaimCost+scansPerFlight*baseline.lithiumPerHour/2;
-    while(target.lithiumLevel<ranges.lithiumLevel[1]&&rewardAt(target.resourceLevel,target.t18,target.lithiumLevel).lithium<spending)target.lithiumLevel++;
-    const lithiumCovered=rewardAt(target.resourceLevel,target.t18,target.lithiumLevel).lithium>=spending;
-    return {levels:{resourceLevel:target.resourceLevel,t18:target.t18,lithiumLevel:target.lithiumLevel},steps,scannerGain,scannerMsuPerPercent,
-      nextCandidates:['resourceLevel','t18'].map(candidate).filter(Boolean),lithiumCovered,
-      resourceLimit:target.resourceLevel===ranges.resourceLevel[1],t18Limit:s.playerClass==='general'&&target.t18===ranges.t18[1]};
+    return {levels:Object.fromEntries(['metal','crystal','deut','lithium','t18'].map(k=>[k,s[k]])),steps};
   }
-  const api={baseline,defaults,ranges,validate,scannerCostAtLevel,resourceCostAtLevel,generalCostAtLevel,cumulative,lithiumPerPlanet,twiceMsu,meanRewards,calculate,autoFit};
-  if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.Orion=api;
+  const api={defaults,validate,calculate,costs,cumulative,autoFit,planner:P,...C};
+  if(node)module.exports=api;else root.Orion=api;
 })(globalThis);
-

@@ -1,47 +1,59 @@
-# OGame Orion Rewards Calculator
+# Orion rewards calculators
 
-A standalone RU/EN calculator for expected Orion anomaly rewards, lithium spending and account investment. Includes a ready-to-use General configuration, exact resource costs, a shareable settings URL, and Minimal/Cosmic themes matching the existing IAS project.
+- Full calculator: https://zikunow.github.io/ogame-orion-rewards-calculator/
+- Simple investment calculator: https://zikunow.github.io/ogame-orion-rewards-calculator/ias_for-dummies/?budget=100
 
-Repository: `zikunow/ogame-orion-rewards-calculator`.
-Pages address after deployment: `https://zikunow.github.io/ogame-orion-rewards-calculator/`.
-This project is independent of the original IAS repository.
+Both calculators now report **gross resource MSU per calendar day**, hours in a flight session, missions/scans per session, refill waiting time and the full start-to-start cycle. Income is constrained by lithium production and slot capacity; requesting arbitrary waves cannot create sustainable income.
 
-## Run
+## Shared engine
 
-Open `index.html` directly in a browser, or serve this directory with `python3 -m http.server 8000`. No build or third-party dependencies are required. Clipboard copying may require HTTPS or localhost; if copying is blocked, use the browser address bar.
+`shared/planner-core.js` and `shared/planner-costs.js` are the same engine files published by `zikunow/ogame-orion-upgrade-planner` in commit `084b6a37aebc550b8a14547e1554be00e6bac71a`. The browser loads the already-public sample directly from `https://zikunow.github.io/ogame-orion-upgrade-planner/anomaly-sample.js`. Its contents are not copied into this repository or its deployment. Both calculators therefore depend on that public script remaining available and compatible. Tests prepare a gitignored local copy from the pinned public commit and verify its blob hash. Update the engine files together when the common model changes.
 
-Run regression checks with Node 18+: `node --test tests/*.test.cjs`.
+The anonymous sample has 333 complete six-result scans / 1,998 anomalies from 30 October 2026. Fields contain only mode, three resource rewards, claim lithium and minutes. No coordinates, player IDs or session identifiers are included. The owner authorized public publication of this source sample; it is already published in the planner repository.
 
-## Model
+Default strategy: PvP, q >=28.4 actual resource MSU / gross claim lithium, six concurrent slots, fleet speed x2, reserve 20% of the seven-day lithium cap. Multiple results of a scan may be used. Resource bonuses and T18 are applied before selection, which is recomputed for each configuration.
 
-Default settings: General, economy x10, 18 planets, scanner 39, experience 100 (+10%), building boost 7.5%, research discount building 25 (6.25%), T18 7, all three resource sub-buildings 15, lithium sub-building 18, six available slots and scan results, six fleet launches per day using six slots each.
+```
+cashback = baseCashback / 100 * (1 + 0.002 * planets * lithiumLevel)
+scanPrice = hourlyLithiumProduction / 2
+netLithiumPerFlight = meanClaim * (1 - cashback) + scansPerFlight * scanPrice
+flightsPerDay = min(24 * hourlyProduction / netLithiumPerFlight,
+                   slots * 1440 / meanMissionMinutes)
+dailyIncome = meanResourceMSU * flightsPerDay
+weeklyCap = 168 * hourlyProduction
+```
 
-Default checkpoints: 81,099,193,887 MSU investment; 795,254,665.2844315 average resource MSU; 26,893,709.00253577 average lithium reward; 21,717,567.43137255 average claim cost. At 36 flights/day: 28,629,167,950.239532 resource MSU and a lithium change of -58,711,059.085182816 after expected scan costs and claims.
+The base cashback is 5%; lithium building 17 on 18 planets gives 8.06%. Cashback applies to claims, not scans. This is a working interpretation supplied by the owner, not a verified exact game formula. Its random distribution is unknown; the model uses expected cashback.
 
-Reward constants are supplied by the experiment: 1,878 anomalies from 313 scans, with a fixed selection of 102 missions (12 PvE, 90 PvP). The UI explains the selection thresholds, mode-specific unboosted sums and all formulas. The spreadsheet is linked for provenance; this package does not import or reselect its raw records.
+Reference rewards are normalized by the observed +61.2% resource bonus and assumed General multipliers 1.5 PvE / 2 PvP, as in the source analysis. Source T18 enhancement was not independently recorded. Rewards and claim prices are extrapolated in proportion to lithium production; durations scale from fleet speed x2. These are modelling assumptions, not validated game formulas for every IAS/economy/class.
 
-Resource rewards and claim costs scale with Q under an unchanged-distribution assumption. Lithium rewards always scale with Q; the scanner dependency is explicitly documented as an unconfirmed model assumption in the formulas section. Economy is selectable from x1 to x10. Other speeds use a linear model relative to the measured x10 baseline. Conversion is floored per planet after applying economy speed; rewards, claims and scans are scaled once. Lithium rewards use the Q ratio once, including economy and scanner effects. Construction costs, IAS and daily flight counts do not depend on economy speed. Other classes are modeled with no General bonus; their own effects are excluded. Result counts other than six use conditional scan-budget estimates because the scan-price dependency has not been confirmed.
+Session estimates use 256 deterministic Monte Carlo resamplings of full scan batches. Production continues, a real-balance storage cap applies, full claim cost is reserved until completion, and new actions stop near the configured reserve. The next cycle starts immediately when lithium refills. A slot-limited state that does not deplete mean stock shows no finite session. The stationary income used for ranking can differ slightly from a finite-session Monte Carlo ratio.
 
-Investment uses BigInt rational arithmetic, including the original IAS nearest rounding and per-resource flooring for sub-buildings and T18. MSU uses a fixed 3:2:1 trade ratio. Slot/result unlock costs and the construction cost of lifeform boost/discount buildings are excluded. Fuel, fleet losses, ships, artifacts, items and XP are excluded from resource MSU. Q is conversion capacity, not free daily lithium production.
-
-## Deployment
-
-Enable Pages with **Settings → Pages → Source: GitHub Actions**. The included workflow checks the calculation model and deploys only static assets on pushes to `main` or manual dispatch.
-
-## Source
-
-Cost formulas, lifeform research-building names, and visual styles were inspected from `zikunow/ogame-orion-ias-calculator` on 2026-10-13. Expected reward constants and modeling requirements come from the supplied specification. Sources are also linked in the calculator.
-
-## Automatic upgrade fitting
-
-Enable “Match upgrades to scanner level” to fit resource sub-buildings, General T18 and lithium whenever account settings change. The toggle is saved in share URLs (`autoFit=1`); disabling it keeps the fitted values available for manual editing. Reset restores the original manual defaults.
-
-Fitting starts from the currently entered resource sub-building, T18 and lithium levels. These levels are lower bounds: automatic fitting can only preserve or raise them, including when scanners decrease or the class changes. At each step it upgrades all three resource sub-buildings together or General T18 on all planets, choosing the smallest marginal MSU per relative +1% resource reward. It stops when remaining upgrades exceed the next scanner level’s MSU per +1%. It then chooses the minimum lithium sub-building level covering expected reward claims and search scans per flight. This uses the existing experimental model and fixed selection rate; scan prices at result counts other than six remain conditional. No free lithium conversion is added. Recommendations extend the entered configuration under this marginal-efficiency rule; they do not guarantee a globally optimal upgrade path.
-
-With default account settings, scanners 39 fit resources 15 / T18 7 / lithium 21; raising scanners from 39 to 45 keeps lithium 21 and fits resources 21 / T18 11. A fresh configuration starting from the original defaults can still fit lithium 18 at scanner 45. Non-General classes preserve existing T18 levels without recommending further T18 upgrades. If lithium coverage cannot be achieved within input limits, the maximum level is selected and a visible warning is shown. Calculator-level caps are reported when hit.
+Income is metal +1.5 crystal +3 deuterium, before fuel, battle losses and lithium conversion costs. Ships, items, XP and artefacts have no assigned value. Full mission completion is assumed; partial-wave optimization is not included. Hours exclude additional fleet return time, manual actions and sleep. All selected missions are assumed successfully completed.
 
 ## Simple calculator
 
-A separate two-input page lives at `ias_for-dummies/`: budget in billions of MSU and fleet waves per day (six flights per wave). It assumes the original 18-planet General, economy ×10, experience 100, 7.5% technology boost, discount building level 25, six anomaly slots and six results per scan. Costs apply to scanner, three resource sub-buildings, lithium and T18 construction from zero. Lifeform boost/discount buildings and slot/result unlock costs are excluded.
+Only one input remains: investment budget in **billions of MSU**. `budget=100` means 100 billion MSU of development, not 100 million lithium. Legacy `waves` is ignored and removed from the URL.
 
-The budget optimizer enumerates scanner and T18 levels, selects the minimum lithium level covering expected claims and scans, and uses exact BigInt costs with a binary search for the highest affordable shared resource level. It maximizes expected resource reward across the bounded discrete configuration grid without exceeding the entered budget. Unlike the full calculator’s incremental auto-fitting, this models a new configuration from zero. A budget below the cheapest lithium-balanced configuration shows the required minimum rather than an unaffordable result. Daily results multiply per-flight rewards by waves × 6. Details include the full configuration and a link to open it in the full calculator. Budget and wave count are shareable in URL parameters.
+The fit starts from zero and searches scanner 1–80, common resource building level 0–50 (all three resources share a level), General T18 0–80 and lithium building 0–50, with 18 planets, economy x10, General, six slots, experience 100, lifeform technology boost 7.5%, research discount building 25. Existing fleet, slot/result unlocks and lifeform support-building costs are excluded. This is the best fit **within the stated equal-resource-level grid**, not a global optimum over independent resource levels.
+
+For each feasible resource/T18/lithium combination, the highest affordable scanner level is best within the shared scaling model: selection and affordable flights/day do not depend on that common production scale, while reward and income grow with production. The search therefore binary-searches scanner level instead of enumerating it. Selection statistics are cached by resource/T18 levels. Tests verify this reduction against exhaustive enumeration on a bounded four-dimensional grid, including lithium levels.
+
+Costs and budget arithmetic use exact BigInts. The result links to the identical configuration in the full calculator. Session and income values are identical in both views.
+
+## Full calculator
+
+Allows separate metal/crystal/deuterium building levels, lithium building, T18, class, planets, economy, lifeform support, threshold, reserve, slots and fleet speed. It uses the planner engine directly. The optional match-buildings button only raises existing building/T18 levels while a candidate has better marginal calendar-income value than the next scanner upgrade; it preserves existing levels and does not change scanner level. It is a greedy helper, not the simple budget search.
+
+Legacy URLs map `resourceLevel` to metal/crystal/deut, `lithiumLevel` to lithium and `availableSlots` to slots unless the new keys are present. Old launches, used-slots and scan-result-count parameters no longer override the six-result source model or the lithium budget. RU/EN and both themes remain supported.
+
+## Checks and publication
+
+```
+node tests/prepare-sample.cjs
+node --test tests/*.test.cjs
+node tests/serve.cjs
+REWARDS_URL=http://127.0.0.1:8080/ node tests/browser-check.cjs
+```
+
+Unit tests cover equality with the planner model, cashback, all-planet costs, candidate matching, validation, no-target/continuous sessions, legacy links, exact budget parsing, bounded exhaustive optimizer validation and equality between simple/full results. Browser checks cover four viewport widths, both full-calculator languages/themes, validation, state reset, old links and the simple-to-full handoff. CI checks branches/PRs; main deploys both sites and the shared assets, then verifies the published calculators.
