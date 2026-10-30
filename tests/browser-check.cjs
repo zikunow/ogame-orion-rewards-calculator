@@ -6,7 +6,7 @@ const {chromium}=require('playwright');
  try{for(const width of [1440,768,390,320]){
   const context=await browser.newContext({viewport:{width,height:1000}}),page=await context.newPage(),errors=[];
   page.on('pageerror',e=>errors.push(e.message));
-  assert.equal((await page.goto(new URL('?lang=en',base).href)).status(),200);
+  assert.equal((await page.goto(new URL('?lang=en&threshold=28.4',base).href)).status(),200);
   assert.equal(await page.locator('#calculatorSelect option').count(),3);
   assert.equal(await page.locator('#threshold').inputValue(),'28.4');assert.match(await page.locator('#cashbackHelp').textContent(),/8.06/);
   assert.equal(await page.locator('#results .stat').count(),4);assert.match(await page.locator('#results').textContent(),/Resources per session/);
@@ -18,11 +18,24 @@ const {chromium}=require('playwright');
   await page.locator('.daily-panel > summary').click();assert.equal(await page.locator('.daily-panel .ledger').isVisible(),false);
   await page.locator('#lithium').fill('18');assert.match(await page.locator('#cashbackHelp').textContent(),/8.24/);
   await page.locator('#planets').fill('0');assert.equal(await page.locator('#results .stat').count(),0);assert.equal(await page.locator('#validation').isVisible(),true);
-  await page.locator('#reset').click();await page.locator('#threshold').fill('1000');assert.match(await page.locator('#results').textContent(),/No sample missions/);
+  await page.locator('#reset').click();await page.locator('#thresholdMode').selectOption('manual');await page.locator('#threshold').fill('1000');assert.match(await page.locator('#results').textContent(),/No sample missions/);
   await page.locator('#threshold').fill('0');await page.locator('#playerClass').selectOption('collector');assert.equal(await page.locator('#t18').isDisabled(),true);
   const old=Number(await page.locator('#metal').inputValue());await page.locator('#autoFit').click();assert.ok(Number(await page.locator('#metal').inputValue())>=old);
   await page.locator('#reset').click();await page.locator('#langRu').click();assert.match(await page.locator('#results').textContent(),/Ресурсы за сессию/);
   for(const theme of ['minimal','cosmic']){await page.locator('#theme').selectOption(theme);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Full overflow '+width+' '+theme);}
+  await page.locator('#reset').click();
+  assert.equal(await page.locator('#thresholdMode').inputValue(),'auto');
+  await page.locator('#playerClass').selectOption('discoverer');
+  assert.equal(await page.locator('#threshold').isDisabled(),true);
+  assert.ok(Number(await page.locator('#threshold').inputValue())>0);
+  assert.match(await page.locator('#classInfo').textContent(),/PvP ×1/);
+  assert.ok(!(await page.locator('#results .stat strong').first().textContent()).includes('—'));
+  await page.reload();assert.equal(await page.locator('#thresholdMode').inputValue(),'auto');
+  await page.locator('#thresholdMode').selectOption('manual');await page.locator('#threshold').fill('1000');
+  assert.equal(await page.locator('#useAutoThreshold').isVisible(),true);
+  await page.locator('#useAutoThreshold').click();assert.equal(await page.locator('#thresholdMode').inputValue(),'auto');
+  assert.equal(await page.locator('#useAutoThreshold').isVisible(),false);
+  await page.locator('#playerClass').selectOption('general');assert.equal(await page.locator('#t18').inputValue(),'7');
   await page.goto(new URL('?resourceLevel=17&lithiumLevel=17&availableSlots=6&t18=0',base).href);assert.equal(await page.locator('#metal').inputValue(),'17');assert.match(await page.locator('#results').textContent(),/162 \/ 1998/);
   if(process.env.SCREENSHOT_DIR){fs.mkdirSync(process.env.SCREENSHOT_DIR,{recursive:true});await page.screenshot({path:process.env.SCREENSHOT_DIR+'/full-'+width+'.png',fullPage:true});}
   await page.locator('#calculatorSelect').selectOption('https://zikunow.github.io/ogame-orion-rewards-calculator/ias_for-dummies/');
@@ -46,3 +59,4 @@ const {chromium}=require('playwright');
   assert.deepEqual(errors,[]);console.log('PASS full + simple '+width+'px');await context.close();
  }}finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1});
+

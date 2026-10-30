@@ -15,7 +15,7 @@
     crystal:cumulative(s.crystal,s.planets,l=>C.resourceCostAtLevel(l,'crystal')),
     deut:cumulative(s.deut,s.planets,l=>C.resourceCostAtLevel(l,'deut')),
     lithium:cumulative(s.lithium,s.planets,l=>C.resourceCostAtLevel(l,'lithium')),
-    t18:cumulative(s.t18,s.planets,l=>C.generalCostAtLevel(l,s.labLevel))
+    t18:s.playerClass!=='general'?zero():cumulative(s.t18,s.planets,l=>C.generalCostAtLevel(l,s.labLevel))
   };}
   function calculate(s,{withSession=true,runs=256}={}){
     const errors=validate(s);if(errors.length)throw new RangeError(errors.join(','));
@@ -36,3 +36,4 @@
   const api={defaults,validate,calculate,costs,cumulative,autoFit,planner:P,...C};
   if(node)module.exports=api;else root.Orion=api;
 })(globalThis);
+
