@@ -177,3 +177,6 @@ html[data-theme="cosmic"] .flight-panel { box-shadow:0 0 30px rgba(0,180,190,.06
 
 
 .field-grid>label{min-width:0}.ledger dd{min-width:0;overflow-wrap:anywhere}.settings-extra{margin-top:20px}.settings-extra summary{cursor:pointer;margin-bottom:18px}.account-panel>h2,.flight-panel>h2{margin-bottom:20px}.settings-actions button{padding:10px 14px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--text);font:inherit;cursor:pointer}.settings-actions{justify-content:flex-start}.stat{min-width:0}.stat small{display:block;line-height:1.5;margin-top:8px}
+
+/* Three forecast cards replace the old four-reward layout. */
+.summary-grid.rewards-summary{grid-template-columns:repeat(3,minmax(0,1fr))}.panel.daily-panel{padding:22px;margin:18px 0}@media(max-width:1000px){.summary-grid.rewards-summary{grid-template-columns:1fr}}@media(max-width:680px){.panel.daily-panel{padding:16px}}
