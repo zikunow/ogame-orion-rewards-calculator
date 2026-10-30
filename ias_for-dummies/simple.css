@@ -40,3 +40,5 @@ footer{margin-top:20px;font-size:10px}
 }
 
 .forecast-grid{grid-template-columns:repeat(4,minmax(0,1fr))}@media(max-width:760px){.forecast-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:560px){.forecast-grid{grid-template-columns:1fr}}
+
+.calculator-picker{max-width:100%;min-width:0;padding:9px 12px;border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--ink);font:inherit;font-size:13px;cursor:pointer}.calculator-picker:focus-visible{outline:2px solid var(--teal);outline-offset:3px}@media(max-width:560px){header{flex-wrap:wrap}.calculator-picker{width:100%}}

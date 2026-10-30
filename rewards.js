@@ -24,7 +24,7 @@ function build(){
   document.documentElement.lang=lang;document.documentElement.dataset.theme=theme;$('theme').value=theme;
   $('title').textContent=t('Награды Ориона','Orion rewards');document.title=t('Награды Ориона — OGame','Orion rewards — OGame');
   $('intro').textContent=t('Средний доход за календарный день, длительность сессии и периодичность заходов. Учитываются поиск аномалий, кэшбэк и производство лития.','Average calendar-day income, session duration and visit frequency. Includes paid scans, cashback and lithium production.');
-  for(const [id,ru,en]of [['navIas','Калькулятор тарелок (IAS)','Scanner calculator (IAS)'],['navResources','Калькулятор подзданий','Building calculator'],['navGeneral','Калькулятор T18 Генерала','General T18 calculator'],['navRewards','Награды Ориона','Orion rewards'],['navSimple','Простой калькулятор','Simple calculator'],['navPlanner','Планировщик улучшений','Upgrade planner']])$(id).textContent=t(ru,en);
+  for(const [id,ru,en]of [['navRewards','Награды Ориона','Orion rewards'],['navSimple','Простой калькулятор','Simple calculator'],['navPlanner','Планировщик улучшений','Upgrade planner']])$(id).textContent=t(ru,en);
   $('themeLabel').textContent=t('Дизайн','Design');$('minimal').textContent=t('Минимализм','Minimal');$('cosmic').textContent=t('Космос','Cosmic');
   $('langRu').setAttribute('aria-pressed',String(lang==='ru'));$('langEn').setAttribute('aria-pressed',String(lang==='en'));
   $('form').innerHTML=`<section class="panel account-panel"><h2>${t('Конфигурация аккаунта','Account configuration')}</h2><div class="field-grid">${['planets','playerClass','scannerLevel','economy','metal','crystal','deut','lithium','t18'].map(field).join('')}</div>

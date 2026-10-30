@@ -2,10 +2,14 @@
 <html lang="ru"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Орион — доход по бюджету вложений</title>
 <meta name="description" content="Бюджет развития Ориона: доход МСУ в календарный день, часы сессии и периодичность заходов с учётом лития и кэшбэка.">
-<link rel="stylesheet" href="simple.css?v=4">
-<script defer src="../shared/planner-costs.js"></script><script defer src="https://zikunow.github.io/ogame-orion-upgrade-planner/anomaly-sample.js"></script><script defer src="../shared/planner-core.js"></script><script defer src="../core.js?v=7"></script><script defer src="simple-core.js?v=2"></script><script defer src="simple.js?v=5"></script>
+<link rel="stylesheet" href="simple.css?v=5">
+<script defer src="../shared/planner-costs.js"></script><script defer src="https://zikunow.github.io/ogame-orion-upgrade-planner/anomaly-sample.js"></script><script defer src="../shared/planner-core.js"></script><script defer src="../core.js?v=7"></script><script defer src="simple-core.js?v=2"></script><script defer src="simple.js?v=6"></script>
 </head><body><main>
-<header><a class="brand" href="../">OGAME <span>/ ОРИОН</span></a><a class="full-link" href="../">Полный калькулятор ↗</a></header>
+<header><a class="brand" href="../">OGAME <span>/ ОРИОН</span></a><select id="calculatorSelect" class="calculator-picker" aria-label="Калькулятор">
+<option value="https://zikunow.github.io/ogame-orion-rewards-calculator/">Награды Ориона</option>
+<option value="https://zikunow.github.io/ogame-orion-rewards-calculator/ias_for-dummies/" selected>Простой калькулятор</option>
+<option value="https://zikunow.github.io/ogame-orion-upgrade-planner/">Планировщик улучшений</option>
+</select></header>
 <section class="intro"><p class="eyebrow">ДОХОД ПО БЮДЖЕТУ</p><h1>Сколько вложить.<br>Как часто играть.</h1><p class="lead">Введите бюджет — подберём улучшения и оценим доход,<br>длительность сессии и время до следующего захода.</p></section>
 <section class="calculator" aria-label="Расчёт дохода"><form id="simpleForm" novalidate><div class="fields"><label for="budget"><span>Бюджет развития с нуля</span><div class="input-unit"><input id="budget" name="budget" type="number" inputmode="decimal" min="0" max="9000000" step="any" value="100" required aria-describedby="budgetHelp"><span>млрд МСУ</span></div><small id="budgetHelp">100 = 100 миллиардов МСУ инвестиций в улучшения.</small></label></div><button type="submit" id="calculate">Рассчитать <span aria-hidden="true">→</span></button><p id="error" class="error" role="alert" hidden></p><p id="pending" class="pending" role="status" hidden>Бюджет изменён. Нажмите «Рассчитать».</p></form><div id="output" aria-live="polite"></div></section>
 <p class="assumptions">18 планет · Генерал · экономика ×10 · военный флот ×2 · 6 слотов<br>Аномалии от 28,4 МСУ/литий · резерв 20% недельного запаса</p>

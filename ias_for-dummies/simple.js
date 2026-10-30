@@ -17,3 +17,5 @@ function calculate(){
 $('simpleForm').addEventListener('submit',event=>{event.preventDefault();calculate();});
 $('budget').addEventListener('input',()=>{$('pending').hidden=false;$('output').innerHTML='';$('error').hidden=true;});
 calculate();
+
+$('calculatorSelect').addEventListener('change',()=>{location.assign($('calculatorSelect').value);});

@@ -7,6 +7,7 @@ const {chromium}=require('playwright');
   const context=await browser.newContext({viewport:{width,height:1000}}),page=await context.newPage(),errors=[];
   page.on('pageerror',e=>errors.push(e.message));
   assert.equal((await page.goto(new URL('?lang=en',base).href)).status(),200);
+  assert.equal(await page.locator('#calculatorSelect option').count(),3);
   assert.equal(await page.locator('#threshold').inputValue(),'28.4');assert.match(await page.locator('#cashbackHelp').textContent(),/8.06/);
   assert.equal(await page.locator('#results .stat').count(),4);assert.match(await page.locator('#results').textContent(),/Resources per session/);
   assert.match(await page.locator('#results .stat').first().textContent(),/Average .*bn MSU\/day.*Lithium stock used ≈80%/);
@@ -24,6 +25,9 @@ const {chromium}=require('playwright');
   for(const theme of ['minimal','cosmic']){await page.locator('#theme').selectOption(theme);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Full overflow '+width+' '+theme);}
   await page.goto(new URL('?resourceLevel=17&lithiumLevel=17&availableSlots=6&t18=0',base).href);assert.equal(await page.locator('#metal').inputValue(),'17');assert.match(await page.locator('#results').textContent(),/162 \/ 1998/);
   if(process.env.SCREENSHOT_DIR){fs.mkdirSync(process.env.SCREENSHOT_DIR,{recursive:true});await page.screenshot({path:process.env.SCREENSHOT_DIR+'/full-'+width+'.png',fullPage:true});}
+  await page.locator('#calculatorSelect').selectOption('https://zikunow.github.io/ogame-orion-rewards-calculator/ias_for-dummies/');
+  await page.waitForURL('**/ias_for-dummies/**');
+  assert.equal(await page.locator('#calculatorSelect option').count(),3);
   await page.goto(new URL('ias_for-dummies/?budget=100&waves=6',base).href);
   assert.equal(await page.locator('#waves').count(),0);assert.equal(await page.locator('#budget').inputValue(),'100');assert.equal(await page.locator('#output .forecast-stat').count(),4);assert.ok(!new URL(page.url()).searchParams.has('waves'));
   assert.match(await page.locator('.forecast-stat').first().textContent(),/В среднем .*МСУ\/день.*Расход запаса лития ≈80%/);
@@ -36,6 +40,9 @@ const {chromium}=require('playwright');
   await page.locator('#budget').fill('0');await page.locator('#calculate').click();assert.equal(await page.locator('#error').isVisible(),true);assert.equal(await page.locator('#output .forecast-stat').count(),0);
   await page.locator('#budget').fill('100');await page.locator('#calculate').click();assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Simple overflow '+width);
   if(process.env.SCREENSHOT_DIR)await page.screenshot({path:process.env.SCREENSHOT_DIR+'/simple-'+width+'.png',fullPage:true});
+  await page.route('https://zikunow.github.io/ogame-orion-upgrade-planner/',route=>route.fulfill({status:200,contentType:'text/html',body:'<!doctype html><title>Navigation test</title>'}));
+  await page.locator('#calculatorSelect').selectOption('https://zikunow.github.io/ogame-orion-upgrade-planner/');
+  await page.waitForURL('https://zikunow.github.io/ogame-orion-upgrade-planner/');
   assert.deepEqual(errors,[]);console.log('PASS full + simple '+width+'px');await context.close();
  }}finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1});
