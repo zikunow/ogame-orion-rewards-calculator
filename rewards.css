@@ -174,3 +174,6 @@ html[data-theme="cosmic"] .flight-panel { box-shadow:0 0 30px rgba(0,180,190,.06
 .managed-field input:disabled { border-style:dashed; background:var(--panel); }
 .managed-notice { color:var(--muted); margin:-4px 0 14px; font-size:12px; line-height:1.6; }
 @media(max-width:680px) { .primary-settings,.upgrade-settings { grid-template-columns:1fr; } .planet-setting,.scanner-setting { padding:14px; } .scanner-setting { padding:13px; } .settings-group { margin-top:20px; } }
+
+
+.field-grid>label{min-width:0}.ledger dd{min-width:0;overflow-wrap:anywhere}.settings-extra{margin-top:20px}.settings-extra summary{cursor:pointer;margin-bottom:18px}.account-panel>h2,.flight-panel>h2{margin-bottom:20px}.settings-actions button{padding:10px 14px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--text);font:inherit;cursor:pointer}.settings-actions{justify-content:flex-start}.stat{min-width:0}.stat small{display:block;line-height:1.5;margin-top:8px}

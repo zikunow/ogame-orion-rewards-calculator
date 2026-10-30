@@ -1,0 +1,33 @@
+name: Check calculators
+on:
+  pull_request:
+  push:
+    branches-ignore: [main]
+permissions:
+  contents: read
+jobs:
+  calculations:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - run: node tests/prepare-sample.cjs
+      - run: node --test tests/*.test.cjs
+  interface:
+    runs-on: ubuntu-latest
+    container: mcr.microsoft.com/playwright:v1.63.0-noble
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - run: npm install --no-save --package-lock=false playwright@1.63.0
+      - name: Check full and simple calculators
+        env:
+          REWARDS_URL: http://127.0.0.1:8080/
+          SCREENSHOT_DIR: /tmp/rewards-screenshots
+        run: |
+          node tests/serve.cjs &
+          node tests/browser-check.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rewards-interface
+          path: /tmp/rewards-screenshots
