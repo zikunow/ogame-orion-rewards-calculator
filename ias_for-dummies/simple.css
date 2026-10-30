@@ -38,3 +38,5 @@ footer{margin-top:20px;font-size:10px}
  .forecast-grid{gap:10px}.forecast-stat{padding-bottom:10px}
  .forecast-stat strong{font-size:22px}.facts dd{margin-top:-3px}
 }
+
+.forecast-grid{grid-template-columns:repeat(4,minmax(0,1fr))}@media(max-width:760px){.forecast-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:560px){.forecast-grid{grid-template-columns:1fr}}
