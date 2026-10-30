@@ -2,3 +2,39 @@
 
 
 .fields{grid-template-columns:1fr}.forecast-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.forecast-stat{min-width:0}.forecast-stat>span{font-size:12px;color:var(--muted)}.forecast-stat strong{display:block;font-size:25px;line-height:1.35;letter-spacing:-.04em;color:var(--teal);margin-top:8px;overflow-wrap:anywhere}.forecast-caption{margin-top:20px!important}.facts dd{overflow-wrap:anywhere;min-width:0}@media(max-width:560px){.forecast-grid{grid-template-columns:1fr}.forecast-stat{padding-bottom:14px;border-bottom:1px solid var(--line)}.forecast-stat:last-child{border:0}}
+
+/* Compact calculator: keep the forecast in the first desktop viewport. */
+main{max-width:800px;padding:16px 24px 24px}
+.intro{margin:24px 0 18px}
+.eyebrow{font-size:10px;margin-bottom:8px}
+h1{font-size:clamp(28px,3.2vw,36px);line-height:1.12;letter-spacing:-.035em}
+.lead{font-size:14px;line-height:1.5;margin-top:10px}
+.calculator{padding:20px;border-radius:12px;box-shadow:0 6px 24px #163a340a}
+#simpleForm{display:grid;grid-template-columns:minmax(0,1fr) 150px;column-gap:14px;align-items:start}
+#simpleForm .error,#simpleForm .pending{grid-column:1/-1;margin-bottom:0}
+label>span{font-size:13px;margin-bottom:6px}
+.input-unit{border-radius:7px;padding:0 12px}
+.input-unit input{height:44px;font-size:21px}
+.input-unit>span{font-size:12px}
+small{font-size:11px;line-height:1.45;margin-top:5px}
+button{height:44px;padding:10px 14px;margin-top:23px;border-radius:7px;font-size:14px}
+button span{font-size:17px}
+.result{margin-top:18px;padding-top:16px}
+.forecast-grid{gap:14px}
+.forecast-stat>span{font-size:11px}
+.forecast-stat strong{font-size:22px;margin-top:5px;line-height:1.25}
+.forecast-caption{margin-top:14px!important;font-size:12px!important}
+.result-detail{margin-top:14px;font-size:12px}
+.facts{gap:7px 14px;margin:12px 0;font-size:12px}
+.chosen{gap:6px;margin:12px 0}.chosen span{padding:5px 7px;font-size:11px}
+.assumptions{font-size:11px;line-height:1.6;margin:12px 0 18px}
+.explanation{font-size:12px;line-height:1.6}
+footer{margin-top:20px;font-size:10px}
+@media(max-width:560px){
+ main{padding:14px 16px 20px}.intro{margin:22px 0 16px}
+ h1{font-size:30px}.lead{font-size:13px;line-height:1.5}
+ .calculator{padding:16px;border-radius:10px}
+ #simpleForm{grid-template-columns:1fr}button{margin-top:12px}
+ .forecast-grid{gap:10px}.forecast-stat{padding-bottom:10px}
+ .forecast-stat strong{font-size:22px}.facts dd{margin-top:-3px}
+}
